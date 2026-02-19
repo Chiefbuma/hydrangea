@@ -17,7 +17,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 // --- Auth Functions ---
 
 export function login(credentials: {email: string, password: string}): Promise<User> {
-    return fetch(`${API_URL}/api/auth/login`, {
+    return fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -25,7 +25,7 @@ export function login(credentials: {email: string, password: string}): Promise<U
 }
 
 export function forgotPassword(data: {email: string}): Promise<{message: string}> {
-    return fetch(`${API_URL}/api/auth/forgot-password`, {
+    return fetch(`${API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -36,38 +36,38 @@ export function forgotPassword(data: {email: string}): Promise<{message: string}
 // --- GET Functions ---
 
 export function getTransactions(): Promise<Transaction[]> {
-  return fetch(`${API_URL}/api/transactions`, { cache: 'no-store' }).then(handleResponse<Transaction[]>);
+  return fetch(`${API_URL}/transactions`, { cache: 'no-store' }).then(handleResponse<Transaction[]>);
 }
 
 export function getAmbulances(): Promise<Ambulance[]> {
-  return fetch(`${API_URL}/api/ambulances`, { cache: 'no-store' }).then(handleResponse<Ambulance[]>);
+  return fetch(`${API_URL}/ambulances`, { cache: 'no-store' }).then(handleResponse<Ambulance[]>);
 }
 
 export function getAmbulanceById(id: number): Promise<Ambulance> {
-  return fetch(`${API_URL}/api/ambulances/${id}`, { cache: 'no-store' }).then(handleResponse<Ambulance>);
+  return fetch(`${API_URL}/ambulances/${id}`, { cache: 'no-store' }).then(handleResponse<Ambulance>);
 }
 
 export function getTransactionsByAmbulanceId(ambulanceId: number): Promise<Transaction[]> {
-  return fetch(`${API_URL}/api/transactions?ambulanceId=${ambulanceId}`, { cache: 'no-store' }).then(handleResponse<Transaction[]>);
+  return fetch(`${API_URL}/transactions?ambulanceId=${ambulanceId}`, { cache: 'no-store' }).then(handleResponse<Transaction[]>);
 }
 
 export function getDrivers(): Promise<Driver[]> {
-  return fetch(`${API_URL}/api/drivers`, { cache: 'no-store' }).then(handleResponse<Driver[]>);
+  return fetch(`${API_URL}/drivers`, { cache: 'no-store' }).then(handleResponse<Driver[]>);
 }
 
 export function getEmergencyTechnicians(): Promise<EmergencyTechnician[]> {
-  return fetch(`${API_URL}/api/emergency-technicians`, { cache: 'no-store' }).then(handleResponse<EmergencyTechnician[]>);
+  return fetch(`${API_URL}/emergency-technicians`, { cache: 'no-store' }).then(handleResponse<EmergencyTechnician[]>);
 }
 
 export function getUsers(): Promise<User[]> {
-  return fetch(`${API_URL}/api/users`, { cache: 'no-store' }).then(handleResponse<User[]>);
+  return fetch(`${API_URL}/users`, { cache: 'no-store' }).then(handleResponse<User[]>);
 }
 
 
 // --- Ambulance Mutations ---
 
 export function createAmbulance(data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
-    return fetch(`${API_URL}/api/ambulances`, {
+    return fetch(`${API_URL}/ambulances`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -75,7 +75,7 @@ export function createAmbulance(data: Partial<Ambulance>): Promise<{message: str
 }
 
 export function updateAmbulance(id: number, data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
-    return fetch(`${API_URL}/api/ambulances/${id}`, {
+    return fetch(`${API_URL}/ambulances/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -83,14 +83,14 @@ export function updateAmbulance(id: number, data: Partial<Ambulance>): Promise<{
 }
 
 export function deleteAmbulance(id: number): Promise<null> {
-    return fetch(`${API_URL}/api/ambulances/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+    return fetch(`${API_URL}/ambulances/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
 }
 
 
 // --- Transaction Mutations ---
 
 export function createTransaction(data: any): Promise<{message: string, transaction: Transaction}> {
-    return fetch(`${API_URL}/api/transactions`, {
+    return fetch(`${API_URL}/transactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -98,7 +98,7 @@ export function createTransaction(data: any): Promise<{message: string, transact
 }
 
 export function updateTransaction(id: number, data: any): Promise<{message: string, transaction: Transaction}> {
-    return fetch(`${API_URL}/api/transactions/${id}`, {
+    return fetch(`${API_URL}/transactions/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -106,14 +106,14 @@ export function updateTransaction(id: number, data: any): Promise<{message: stri
 }
 
 export function deleteTransaction(id: number): Promise<null> {
-    return fetch(`${API_URL}/api/transactions/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+    return fetch(`${API_URL}/transactions/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
 }
 
 
 // --- Driver Mutations ---
 
 export function createDriver(data: {name: string}): Promise<{message: string, driver: Driver}> {
-    return fetch(`${API_URL}/api/drivers`, {
+    return fetch(`${API_URL}/drivers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -121,7 +121,7 @@ export function createDriver(data: {name: string}): Promise<{message: string, dr
 }
 
 export function updateDriver(id: number, data: {name: string}): Promise<{message: string, driver: Driver}> {
-    return fetch(`${API_URL}/api/drivers/${id}`, {
+    return fetch(`${API_URL}/drivers/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -129,14 +129,14 @@ export function updateDriver(id: number, data: {name: string}): Promise<{message
 }
 
 export function deleteDriver(id: number): Promise<null> {
-    return fetch(`${API_URL}/api/drivers/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+    return fetch(`${API_URL}/drivers/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
 }
 
 
 // --- Technician Mutations ---
 
 export function createTechnician(data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
-    return fetch(`${API_URL}/api/emergency-technicians`, {
+    return fetch(`${API_URL}/emergency-technicians`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -144,7 +144,7 @@ export function createTechnician(data: {name: string}): Promise<{message: string
 }
 
 export function updateTechnician(id: number, data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
-    return fetch(`${API_URL}/api/emergency-technicians/${id}`, {
+    return fetch(`${API_URL}/emergency-technicians/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -152,14 +152,14 @@ export function updateTechnician(id: number, data: {name: string}): Promise<{mes
 }
 
 export function deleteTechnician(id: number): Promise<null> {
-    return fetch(`${API_URL}/api/emergency-technicians/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+    return fetch(`${API_URL}/emergency-technicians/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
 }
 
 
 // --- User & Profile Mutations ---
 
 export function createUser(data: Partial<User>): Promise<{message: string, user: User}> {
-    return fetch(`${API_URL}/api/users`, {
+    return fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -167,7 +167,7 @@ export function createUser(data: Partial<User>): Promise<{message: string, user:
 }
 
 export function updateUser(id: number, data: Partial<User>): Promise<{message: string, user: User}> {
-    return fetch(`${API_URL}/api/users/${id}`, {
+    return fetch(`${API_URL}/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -175,5 +175,5 @@ export function updateUser(id: number, data: Partial<User>): Promise<{message: s
 }
 
 export function deleteUser(id: number): Promise<null> {
-    return fetch(`${API_URL}/api/users/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+    return fetch(`${API_URL}/users/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
 }
