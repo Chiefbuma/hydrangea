@@ -1,5 +1,5 @@
 
-import { db, testDatabaseConnection } from '@/lib/db';
+import { db } from '@/lib/db';
 import { executeQuery } from '@/lib/db-helpers';
 import { NextResponse } from 'next/server';
 import { RowDataPacket } from 'mysql2';
@@ -26,11 +26,6 @@ async function buildSingleTransaction(transactionRow: any): Promise<Transaction 
 
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const isConnected = await testDatabaseConnection();
-  if (!isConnected) {
-    return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
-  }
-  
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
@@ -115,11 +110,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  const isConnected = await testDatabaseConnection();
-  if (!isConnected) {
-    return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
-  }
-  
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();

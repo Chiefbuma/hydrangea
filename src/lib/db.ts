@@ -1,31 +1,17 @@
-// Load environment variables FIRST, before anything else
-import path from 'path';
-import dotenv from 'dotenv';
+// lib/db.ts
 import mysql from 'mysql2/promise';
 
 // In cPanel/Passenger, environment variables are already set by the hosting panel
-// Only load .env files as fallback for local development
+// Only log in development to avoid cluttering production logs
 if (process.env.NODE_ENV !== 'production') {
-  const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
-  dotenv.config({ path: path.resolve(process.cwd(), envFile) });
-  dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-}
-
-// Debug logging (remove in production)
-console.log('🔧 DB Config Check:', {
-  NODE_ENV: process.env.NODE_ENV,
-  DB_HOST: process.env.DB_HOST ? '✅ Set' : '❌ Missing',
-  DB_USER: process.env.DB_USER ? '✅ Set' : '❌ Missing',
-  DB_DATABASE: process.env.DB_DATABASE ? '✅ Set' : '❌ Missing',
-  DB_PORT: process.env.DB_PORT ? '✅ Set' : '❌ Missing',
-  DB_PASSWORD: process.env.DB_PASSWORD ? '✅ Set' : '❌ Missing',
-  CWD: process.cwd()
-});
-
-declare global {
-  // allow global `var` declarations
-  // eslint-disable-next-line no-var
-  var db: mysql.Pool | undefined;
+  console.log('🔧 DB Config Check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    DB_HOST: process.env.DB_HOST ? '✅ Set' : '❌ Missing',
+    DB_USER: process.env.DB_USER ? '✅ Set' : '❌ Missing',
+    DB_DATABASE: process.env.DB_DATABASE ? '✅ Set' : '❌ Missing',
+    DB_PORT: process.env.DB_PORT ? '✅ Set' : '❌ Missing',
+    DB_PASSWORD: process.env.DB_PASSWORD ? '✅ Set' : '❌ Missing',
+  });
 }
 
 // Validate required environment variables
@@ -34,54 +20,77 @@ const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingEnvVars.length > 0) {
   console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
-  // Don't throw error immediately, let the app try to connect and fail gracefully
 }
 
 // Create connection pool configuration
 const poolConfig = {
-  host: process.env.DB_HOST || '127.0.0.1',
+  host: process.env.DB_HOST || 'localhost', // Try 'localhost' instead of '127.0.0.1'
   user: process.env.DB_USER || '',
   database: process.env.DB_DATABASE || '',
   password: process.env.DB_PASSWORD || '',
   port: Number(process.env.DB_PORT) || 3306,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5, // Reduced for cPanel
   queueLimit: 0,
-  decimalNumbers: true,
-  // Add timeout to prevent hanging
   connectTimeout: 10000,
-  // Enable keep-alive
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
 };
 
-// Create the pool
-const db = global.db || mysql.createPool(poolConfig);
+// Create the pool (but don't test connection immediately)
+let pool: mysql.Pool;
 
-// Export the pool immediately (don't wait for connection test)
-if (process.env.NODE_ENV !== 'production') global.db = db;
-
-// Test connection lazily (only when needed)
-export async function testDatabaseConnection() {
-  try {
-    const connection = await db.getConnection();
-    console.log('✅ Database connected successfully');
-    connection.release();
-    return true;
-  } catch (err) {
-    console.error('❌ Database connection failed:', err);
-    console.error('Connection config used:', {
-      host: poolConfig.host,
-      user: poolConfig.user,
-      database: poolConfig.database,
-      port: poolConfig.port,
-      // Don't log password
-    });
-    return false;
-  }
+try {
+  pool = mysql.createPool(poolConfig);
+  console.log('✅ Database pool created');
+} catch (err) {
+  console.error('❌ Failed to create database pool:', err);
+  // Create a dummy pool that will throw meaningful errors
+  pool = mysql.createPool({
+    host: 'localhost',
+    user: 'dummy',
+    password: 'dummy',
+    database: 'dummy',
+  });
 }
 
-// Call test connection but don't block
-testDatabaseConnection().catch(console.error);
+// Export a wrapper that tests connection on each request
+export const db = {
+  async execute(query: string, params?: any[]) {
+    try {
+      const [rows] = await pool.execute(query, params);
+      return rows;
+    } catch (error: any) {
+      console.error('Database query error:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno,
+        sqlState: error.sqlState,
+      });
+      throw new Error(`Database error: ${error.message}`);
+    }
+  },
 
-export { db };
+  async getConnection() {
+    try {
+      const connection = await pool.getConnection();
+      return connection;
+    } catch (error: any) {
+      console.error('Failed to get database connection:', error.message);
+      throw error;
+    }
+  }
+};
+
+// Optional: Test connection but don't block
+if (process.env.NODE_ENV !== 'production') {
+  (async () => {
+    try {
+      const conn = await pool.getConnection();
+      console.log('✅ Database connection test successful');
+      conn.release();
+    } catch (err: any) {
+      console.error('❌ Database connection test failed:', err.message);
+    }
+  })();
+}

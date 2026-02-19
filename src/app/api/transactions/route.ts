@@ -1,5 +1,5 @@
 
-import { db, testDatabaseConnection } from '@/lib/db';
+import { db } from '@/lib/db';
 import { executeQuery } from '@/lib/db-helpers';
 import { NextResponse, NextRequest } from 'next/server';
 import type { Transaction } from '@/lib/types';
@@ -99,11 +99,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: Request) {
-  const isConnected = await testDatabaseConnection();
-  if (!isConnected) {
-    return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
-  }
-
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
