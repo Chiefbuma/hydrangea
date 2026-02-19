@@ -2,178 +2,340 @@ import type { Transaction, Ambulance, Driver, EmergencyTechnician, User } from '
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
-async function handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-        const errorBody = await response.json().catch(() => ({ message: `Request failed with status ${response.status}` }));
-        console.error(`API Error: ${response.status}`, errorBody);
-        throw new Error(errorBody.message || 'An API error occurred.');
+// Generic function to handle API responses and extract error messages
+async function getErrorFromResponse(response: Response): Promise<Error> {
+    try {
+        const errorData = await response.json();
+        return new Error(errorData.message || 'An unknown error occurred.');
+    } catch {
+        return new Error(`Request failed with status ${response.status} and the response was not valid JSON.`);
     }
-    if (response.status === 204) {
-        return null as T;
-    }
-    return response.json() as Promise<T>;
 }
+
 
 // --- Auth Functions ---
 
-export function login(credentials: {email: string, password: string}): Promise<User> {
-    return fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-    }).then(handleResponse<User>);
+export async function login(credentials: {email: string, password: string}): Promise<User> {
+    try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[LOGIN_ERROR]', error);
+        throw error;
+    }
 }
 
-export function forgotPassword(data: {email: string}): Promise<{message: string}> {
-    return fetch(`${API_URL}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string}>);
+export async function forgotPassword(data: {email: string}): Promise<{message: string}> {
+    try {
+        const res = await fetch(`${API_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[FORGOT_PASSWORD_ERROR]', error);
+        throw error;
+    }
 }
 
 
 // --- GET Functions ---
 
-export function getTransactions(): Promise<Transaction[]> {
-  return fetch(`${API_URL}/transactions`, { cache: 'no-store' }).then(handleResponse<Transaction[]>);
+export async function getTransactions(): Promise<Transaction[]> {
+  try {
+    const res = await fetch(`${API_URL}/transactions`, { cache: 'no-store' });
+    if (!res.ok) throw await getErrorFromResponse(res);
+    return res.json();
+  } catch (error) {
+    console.error('[GET_TRANSACTIONS_ERROR]', error);
+    throw error;
+  }
 }
 
-export function getAmbulances(): Promise<Ambulance[]> {
-  return fetch(`${API_URL}/ambulances`, { cache: 'no-store' }).then(handleResponse<Ambulance[]>);
+export async function getAmbulances(): Promise<Ambulance[]> {
+  try {
+    const res = await fetch(`${API_URL}/ambulances`, { cache: 'no-store' });
+    if (!res.ok) throw await getErrorFromResponse(res);
+    return res.json();
+  } catch (error) {
+    console.error('[GET_AMBULANCES_ERROR]', error);
+    throw error;
+  }
 }
 
-export function getAmbulanceById(id: number): Promise<Ambulance> {
-  return fetch(`${API_URL}/ambulances/${id}`, { cache: 'no-store' }).then(handleResponse<Ambulance>);
+export async function getAmbulanceById(id: number): Promise<Ambulance> {
+  try {
+    const res = await fetch(`${API_URL}/ambulances/${id}`, { cache: 'no-store' });
+    if (!res.ok) throw await getErrorFromResponse(res);
+    return res.json();
+  } catch (error) {
+    console.error(`[GET_AMBULANCE_BY_ID_ERROR] ID: ${id}`, error);
+    throw error;
+  }
 }
 
-export function getTransactionsByAmbulanceId(ambulanceId: number): Promise<Transaction[]> {
-  return fetch(`${API_URL}/transactions?ambulanceId=${ambulanceId}`, { cache: 'no-store' }).then(handleResponse<Transaction[]>);
+export async function getTransactionsByAmbulanceId(ambulanceId: number): Promise<Transaction[]> {
+  try {
+    const res = await fetch(`${API_URL}/transactions?ambulanceId=${ambulanceId}`, { cache: 'no-store' });
+    if (!res.ok) throw await getErrorFromResponse(res);
+    return res.json();
+  } catch (error) {
+    console.error(`[GET_TRANSACTIONS_BY_AMBULANCE_ID_ERROR] ID: ${ambulanceId}`, error);
+    throw error;
+  }
 }
 
-export function getDrivers(): Promise<Driver[]> {
-  return fetch(`${API_URL}/drivers`, { cache: 'no-store' }).then(handleResponse<Driver[]>);
+export async function getDrivers(): Promise<Driver[]> {
+  try {
+    const res = await fetch(`${API_URL}/drivers`, { cache: 'no-store' });
+    if (!res.ok) throw await getErrorFromResponse(res);
+    return res.json();
+  } catch (error) {
+    console.error('[GET_DRIVERS_ERROR]', error);
+    throw error;
+  }
 }
 
-export function getEmergencyTechnicians(): Promise<EmergencyTechnician[]> {
-  return fetch(`${API_URL}/emergency-technicians`, { cache: 'no-store' }).then(handleResponse<EmergencyTechnician[]>);
+export async function getEmergencyTechnicians(): Promise<EmergencyTechnician[]> {
+  try {
+    const res = await fetch(`${API_URL}/emergency-technicians`, { cache: 'no-store' });
+    if (!res.ok) throw await getErrorFromResponse(res);
+    return res.json();
+  } catch (error) {
+    console.error('[GET_EMERGENCY_TECHNICIANS_ERROR]', error);
+    throw error;
+  }
 }
 
-export function getUsers(): Promise<User[]> {
-  return fetch(`${API_URL}/users`, { cache: 'no-store' }).then(handleResponse<User[]>);
+export async function getUsers(): Promise<User[]> {
+  try {
+    const res = await fetch(`${API_URL}/users`, { cache: 'no-store' });
+    if (!res.ok) throw await getErrorFromResponse(res);
+    return res.json();
+  } catch (error) {
+    console.error('[GET_USERS_ERROR]', error);
+    throw error;
+  }
 }
 
 
 // --- Ambulance Mutations ---
 
-export function createAmbulance(data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
-    return fetch(`${API_URL}/ambulances`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, ambulance: Ambulance}>);
+export async function createAmbulance(data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
+    try {
+        const res = await fetch(`${API_URL}/ambulances`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[CREATE_AMBULANCE_ERROR]', error);
+        throw error;
+    }
 }
 
-export function updateAmbulance(id: number, data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
-    return fetch(`${API_URL}/ambulances/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, ambulance: Ambulance}>);
+export async function updateAmbulance(id: number, data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
+    try {
+        const res = await fetch(`${API_URL}/ambulances/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error(`[UPDATE_AMBULANCE_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
-export function deleteAmbulance(id: number): Promise<null> {
-    return fetch(`${API_URL}/ambulances/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+export async function deleteAmbulance(id: number): Promise<void> {
+    try {
+        const res = await fetch(`${API_URL}/ambulances/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw await getErrorFromResponse(res);
+    } catch (error) {
+        console.error(`[DELETE_AMBULANCE_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
 
 // --- Transaction Mutations ---
 
-export function createTransaction(data: any): Promise<{message: string, transaction: Transaction}> {
-    return fetch(`${API_URL}/transactions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, transaction: Transaction}>);
+export async function createTransaction(data: any): Promise<{message: string, transaction: Transaction}> {
+    try {
+        const res = await fetch(`${API_URL}/transactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[CREATE_TRANSACTION_ERROR]', error);
+        throw error;
+    }
 }
 
-export function updateTransaction(id: number, data: any): Promise<{message: string, transaction: Transaction}> {
-    return fetch(`${API_URL}/transactions/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, transaction: Transaction}>);
+export async function updateTransaction(id: number, data: any): Promise<{message: string, transaction: Transaction}> {
+    try {
+        const res = await fetch(`${API_URL}/transactions/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error(`[UPDATE_TRANSACTION_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
-export function deleteTransaction(id: number): Promise<null> {
-    return fetch(`${API_URL}/transactions/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+export async function deleteTransaction(id: number): Promise<void> {
+    try {
+        const res = await fetch(`${API_URL}/transactions/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw await getErrorFromResponse(res);
+    } catch (error) {
+        console.error(`[DELETE_TRANSACTION_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
 
 // --- Driver Mutations ---
 
-export function createDriver(data: {name: string}): Promise<{message: string, driver: Driver}> {
-    return fetch(`${API_URL}/drivers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, driver: Driver}>);
+export async function createDriver(data: {name: string}): Promise<{message: string, driver: Driver}> {
+    try {
+        const res = await fetch(`${API_URL}/drivers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[CREATE_DRIVER_ERROR]', error);
+        throw error;
+    }
 }
 
-export function updateDriver(id: number, data: {name: string}): Promise<{message: string, driver: Driver}> {
-    return fetch(`${API_URL}/drivers/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, driver: Driver}>);
+export async function updateDriver(id: number, data: {name: string}): Promise<{message: string, driver: Driver}> {
+    try {
+        const res = await fetch(`${API_URL}/drivers/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error(`[UPDATE_DRIVER_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
-export function deleteDriver(id: number): Promise<null> {
-    return fetch(`${API_URL}/drivers/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+export async function deleteDriver(id: number): Promise<void> {
+    try {
+        const res = await fetch(`${API_URL}/drivers/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw await getErrorFromResponse(res);
+    } catch (error) {
+        console.error(`[DELETE_DRIVER_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
 
 // --- Technician Mutations ---
 
-export function createTechnician(data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
-    return fetch(`${API_URL}/emergency-technicians`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, technician: EmergencyTechnician}>);
+export async function createTechnician(data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
+    try {
+        const res = await fetch(`${API_URL}/emergency-technicians`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[CREATE_TECHNICIAN_ERROR]', error);
+        throw error;
+    }
 }
 
-export function updateTechnician(id: number, data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
-    return fetch(`${API_URL}/emergency-technicians/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, technician: EmergencyTechnician}>);
+export async function updateTechnician(id: number, data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
+    try {
+        const res = await fetch(`${API_URL}/emergency-technicians/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error(`[UPDATE_TECHNICIAN_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
-export function deleteTechnician(id: number): Promise<null> {
-    return fetch(`${API_URL}/emergency-technicians/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+export async function deleteTechnician(id: number): Promise<void> {
+    try {
+        const res = await fetch(`${API_URL}/emergency-technicians/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw await getErrorFromResponse(res);
+    } catch (error) {
+        console.error(`[DELETE_TECHNICIAN_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
 
 // --- User & Profile Mutations ---
 
-export function createUser(data: Partial<User>): Promise<{message: string, user: User}> {
-    return fetch(`${API_URL}/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, user: User}>);
+export async function createUser(data: Partial<User>): Promise<{message: string, user: User}> {
+    try {
+        const res = await fetch(`${API_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[CREATE_USER_ERROR]', error);
+        throw error;
+    }
 }
 
-export function updateUser(id: number, data: Partial<User>): Promise<{message: string, user: User}> {
-    return fetch(`${API_URL}/users/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-    }).then(handleResponse<{message: string, user: User}>);
+export async function updateUser(id: number, data: Partial<User>): Promise<{message: string, user: User}> {
+    try {
+        const res = await fetch(`${API_URL}/users/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error(`[UPDATE_USER_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
 
-export function deleteUser(id: number): Promise<null> {
-    return fetch(`${API_URL}/users/${id}`, { method: 'DELETE' }).then(handleResponse<null>);
+export async function deleteUser(id: number): Promise<void> {
+    try {
+        const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw await getErrorFromResponse(res);
+    } catch (error) {
+        console.error(`[DELETE_USER_ERROR] ID: ${id}`, error);
+        throw error;
+    }
 }
