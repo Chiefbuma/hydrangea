@@ -1,9 +1,8 @@
 
-import { db } from '@/lib/db';
-import { executeQuery } from '@/lib/db-helpers';
+import pool from '@/lib/db';
 import { NextResponse, NextRequest } from 'next/server';
 import type { Transaction } from '@/lib/types';
-import { RowDataPacket } from 'mysql2';
+import { RowDataPacket, ResultSetHeader, PoolConnection } from 'mysql2/promise';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,15 +16,15 @@ async function buildTransactions(transactionRows: any[]): Promise<Transaction[]>
   const ambulanceIds = Array.from(new Set(transactionRows.map(t => t.ambulance_id).filter(Boolean)));
   const driverIds = Array.from(new Set(transactionRows.map(t => t.driver_id).filter(Boolean)));
 
-  const ambulances = ambulanceIds.length
-    ? await executeQuery<RowDataPacket[]>('SELECT id, reg_no, fuel_cost, operation_cost, target, status FROM ambulances WHERE id IN (?)', [ambulanceIds])
-    : [];
+  const [ambulances] = ambulanceIds.length
+    ? await pool.query<RowDataPacket[]>('SELECT id, reg_no, fuel_cost, operation_cost, target, status FROM ambulances WHERE id IN (?)', [ambulanceIds])
+    : [[]];
 
-  const drivers = driverIds.length
-    ? await executeQuery<RowDataPacket[]>('SELECT id, name FROM drivers WHERE id IN (?)', [driverIds])
-    : [];
+  const [drivers] = driverIds.length
+    ? await pool.query<RowDataPacket[]>('SELECT id, name FROM drivers WHERE id IN (?)', [driverIds])
+    : [[]];
 
-  const technicianRows = await executeQuery<RowDataPacket[]>(
+  const [technicianRows] = await pool.query<RowDataPacket[]>(
     'SELECT tt.transaction_id, et.id, et.name FROM transaction_technicians tt JOIN emergency_technicians et ON et.id = tt.technician_id WHERE tt.transaction_id IN (?)',
     [transactionIds]
   );
@@ -87,7 +86,7 @@ export async function GET(req: NextRequest) {
     
     query += ' ORDER BY t.date DESC';
 
-    const rows = await executeQuery<RowDataPacket[]>(query, params);
+    const [rows] = await pool.query<RowDataPacket[]>(query, params);
     const fullTransactions = await buildTransactions(rows as any[]);
     console.log(`Successfully fetched from /api/transactions?${searchParams.toString()}`);
     return NextResponse.json(fullTransactions);
@@ -99,8 +98,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: Request) {
-  const connection = await db.getConnection();
+  let connection: PoolConnection | null = null;
   try {
+    connection = await pool.getConnection();
     await connection.beginTransaction();
 
     const {
@@ -155,8 +155,8 @@ export async function POST(req: Request) {
         fuel_revenue_ratio,
     };
 
-    const [result] = await connection.query('INSERT INTO transactions SET ?', [transactionData]);
-    const transactionId = (result as any).insertId;
+    const [result] = await connection.query<ResultSetHeader>('INSERT INTO transactions SET ?', [transactionData]);
+    const transactionId = result.insertId;
 
     if (emergency_technician_ids && emergency_technician_ids.length > 0) {
         const technicianLinks = emergency_technician_ids.map((techId: number) => [transactionId, techId]);
@@ -166,16 +166,15 @@ export async function POST(req: Request) {
     await connection.commit();
 
     const [rows] = await connection.query<RowDataPacket[]>('SELECT * FROM transactions WHERE id = ?', [transactionId]);
-    // We need to use a connection-aware buildTransactions function or rebuild it here
     const newTransaction = await buildTransactions(rows as any[]);
 
     return NextResponse.json({ message: 'Transaction created successfully', transaction: newTransaction[0] }, { status: 201 });
 
   } catch (error) {
-    await connection.rollback();
+    if (connection) await connection.rollback();
     console.error("Caught error in POST /api/transactions:", error);
     return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 }

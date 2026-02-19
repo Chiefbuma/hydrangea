@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { executeQuery } from '@/lib/db-helpers';
+import pool from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const rows = await executeQuery<RowDataPacket[]>('SELECT id, name, email, role FROM users WHERE id = ?', [params.id]);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, email, role FROM users WHERE id = ?', [params.id]);
 
     if (rows.length === 0) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -29,18 +29,18 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      await executeQuery<ResultSetHeader>(
+      await pool.execute<ResultSetHeader>(
         'UPDATE users SET name = ?, email = ?, role = ?, password = ? WHERE id = ?',
         [name, email, role, hashedPassword, params.id]
       );
     } else {
-      await executeQuery<ResultSetHeader>(
+      await pool.execute<ResultSetHeader>(
         'UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?',
         [name, email, role, params.id]
       );
     }
 
-    const rows = await executeQuery<RowDataPacket[]>('SELECT id, name, email, role FROM users WHERE id = ?', [params.id]);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, email, role FROM users WHERE id = ?', [params.id]);
 
     if (rows.length === 0) {
       return NextResponse.json({ message: 'User not found after update' }, { status: 404 });
@@ -58,7 +58,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    await executeQuery('DELETE FROM users WHERE id = ?', [params.id]);
+    await pool.execute('DELETE FROM users WHERE id = ?', [params.id]);
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error("Caught error in DELETE /api/users/[id]:", error);

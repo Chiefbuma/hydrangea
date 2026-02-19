@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { executeQuery } from '@/lib/db-helpers';
+import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Email and password are required' }, { status: 400 });
     }
 
-    const users = await executeQuery<RowDataPacket[]>('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
+    const [users] = await pool.query<RowDataPacket[]>('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
 
     if (users.length === 0) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
