@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { getUsers, createUser, updateUser, deleteUser } from '@/services/radiant-health-service';
+import { getUsers, createUser, updateUser, deleteUser } from '@/services/api-service';
 
 type UserFormData = {
     name: string;

@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { getEmergencyTechnicians, createTechnician, updateTechnician, deleteTechnician } from '@/services/radiant-health-service';
+import { getEmergencyTechnicians, createTechnician, updateTechnician, deleteTechnician } from '@/services/api-service';
 
 export default function MedicalStaffClient({ initialMedicalStaff: initialData }: { initialMedicalStaff: EmergencyTechnician[] }) {
   const [medicalStaff, setMedicalStaff] = useState<EmergencyTechnician[]>(initialData);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { User, Driver, EmergencyTechnician } from '@/lib/types';
-import { getUsers, getDrivers, getEmergencyTechnicians } from '@/services/radiant-health-service';
+import { getUsers, getDrivers, getEmergencyTechnicians } from '@/services/api-service';
 import UsersClient from '@/app/dashboard/users/users-client';
 import DriversClient from '@/app/dashboard/drivers/drivers-client';
 import MedicalStaffClient from '@/app/dashboard/medical-staff/medical-staff-client';

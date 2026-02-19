@@ -23,7 +23,7 @@ export async function login(credentials: {email: string, password: string}): Pro
             body: JSON.stringify(credentials),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error('[LOGIN_ERROR]', error);
         throw error;
@@ -38,7 +38,7 @@ export async function forgotPassword(data: {email: string}): Promise<{message: s
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error('[FORGOT_PASSWORD_ERROR]', error);
         throw error;
@@ -52,7 +52,7 @@ export async function getTransactions(): Promise<Transaction[]> {
   try {
     const res = await fetch(`${API_URL}/transactions`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
-    return await res.json();
+    return res.json();
   } catch (error) {
     console.error('[GET_TRANSACTIONS_ERROR]', error);
     throw error;
@@ -63,7 +63,7 @@ export async function getAmbulances(): Promise<Ambulance[]> {
   try {
     const res = await fetch(`${API_URL}/ambulances`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
-    return await res.json();
+    return res.json();
   } catch (error) {
     console.error('[GET_AMBULANCES_ERROR]', error);
     throw error;
@@ -74,7 +74,7 @@ export async function getAmbulanceById(id: number): Promise<Ambulance> {
   try {
     const res = await fetch(`${API_URL}/ambulances/${id}`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
-    return await res.json();
+    return res.json();
   } catch (error) {
     console.error(`[GET_AMBULANCE_BY_ID_ERROR] ID: ${id}`, error);
     throw error;
@@ -85,7 +85,7 @@ export async function getTransactionsByAmbulanceId(ambulanceId: number): Promise
   try {
     const res = await fetch(`${API_URL}/transactions?ambulanceId=${ambulanceId}`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
-    return await res.json();
+    return res.json();
   } catch (error) {
     console.error(`[GET_TRANSACTIONS_BY_AMBULANCE_ID_ERROR] ID: ${ambulanceId}`, error);
     throw error;
@@ -96,7 +96,7 @@ export async function getDrivers(): Promise<Driver[]> {
   try {
     const res = await fetch(`${API_URL}/drivers`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
-    return await res.json();
+    return res.json();
   } catch (error) {
     console.error('[GET_DRIVERS_ERROR]', error);
     throw error;
@@ -107,7 +107,7 @@ export async function getEmergencyTechnicians(): Promise<EmergencyTechnician[]> 
   try {
     const res = await fetch(`${API_URL}/emergency-technicians`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
-    return await res.json();
+    return res.json();
   } catch (error) {
     console.error('[GET_EMERGENCY_TECHNICIANS_ERROR]', error);
     throw error;
@@ -118,7 +118,7 @@ export async function getUsers(): Promise<User[]> {
   try {
     const res = await fetch(`${API_URL}/users`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
-    return await res.json();
+    return res.json();
   } catch (error) {
     console.error('[GET_USERS_ERROR]', error);
     throw error;
@@ -136,7 +136,7 @@ export async function createAmbulance(data: Partial<Ambulance>): Promise<{messag
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error('[CREATE_AMBULANCE_ERROR]', error);
         throw error;
@@ -151,7 +151,7 @@ export async function updateAmbulance(id: number, data: Partial<Ambulance>): Pro
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error(`[UPDATE_AMBULANCE_ERROR] ID: ${id}`, error);
         throw error;
@@ -179,7 +179,7 @@ export async function createTransaction(data: any): Promise<{message: string, tr
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error('[CREATE_TRANSACTION_ERROR]', error);
         throw error;
@@ -194,7 +194,7 @@ export async function updateTransaction(id: number, data: any): Promise<{message
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error(`[UPDATE_TRANSACTION_ERROR] ID: ${id}`, error);
         throw error;
@@ -222,7 +222,7 @@ export async function createDriver(data: {name: string}): Promise<{message: stri
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error('[CREATE_DRIVER_ERROR]', error);
         throw error;
@@ -237,7 +237,7 @@ export async function updateDriver(id: number, data: {name: string}): Promise<{m
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error(`[UPDATE_DRIVER_ERROR] ID: ${id}`, error);
         throw error;
@@ -265,7 +265,7 @@ export async function createTechnician(data: {name: string}): Promise<{message: 
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error('[CREATE_TECHNICIAN_ERROR]', error);
         throw error;
@@ -280,7 +280,7 @@ export async function updateTechnician(id: number, data: {name: string}): Promis
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error(`[UPDATE_TECHNICIAN_ERROR] ID: ${id}`, error);
         throw error;
@@ -308,7 +308,7 @@ export async function createUser(data: Partial<User>): Promise<{message: string,
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error('[CREATE_USER_ERROR]', error);
         throw error;
@@ -323,7 +323,7 @@ export async function updateUser(id: number, data: Partial<User>): Promise<{mess
             body: JSON.stringify(data),
         });
         if (!res.ok) throw await getErrorFromResponse(res);
-        return await res.json();
+        return res.json();
     } catch (error) {
         console.error(`[UPDATE_USER_ERROR] ID: ${id}`, error);
         throw error;
