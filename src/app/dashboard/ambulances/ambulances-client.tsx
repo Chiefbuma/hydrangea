@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getAmbulances, createAmbulance, updateAmbulance, deleteAmbulance } from '@/lib/data';
+import { getAmbulances, createAmbulance, updateAmbulance, deleteAmbulance } from '@/services/radiant-health-service';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function AmbulancesClient() {

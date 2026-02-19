@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { Ambulance, Transaction, Driver, EmergencyTechnician } from '@/lib/types';
-import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getEmergencyTechnicians, createTransaction, updateTransaction, deleteTransaction } from '@/lib/data';
+import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getEmergencyTechnicians, createTransaction, updateTransaction, deleteTransaction } from '@/services/radiant-health-service';
 import {
   Card,
   CardContent,

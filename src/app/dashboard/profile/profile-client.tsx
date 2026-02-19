@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { updateUser } from '@/lib/data';
+import { updateUser } from '@/services/radiant-health-service';
 
 export default function ProfileClient() {
   const [user, setUser] = useState<User | null>(null);

@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/logo';
-import { login } from '@/lib/data';
+import { login } from '@/services/radiant-health-service';
 
 export default function LoginClient() {
   const [email, setEmail] = useState('');

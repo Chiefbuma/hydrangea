@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { getDrivers, createDriver, updateDriver, deleteDriver } from '@/lib/data';
+import { getDrivers, createDriver, updateDriver, deleteDriver } from '@/services/radiant-health-service';
 
 export default function DriversClient({ initialDrivers: initialData }: { initialDrivers: Driver[] }) {
   const [drivers, setDrivers] = useState<Driver[]>(initialData);
