@@ -1,7 +1,5 @@
 import type { Transaction, Ambulance, Driver, EmergencyTechnician, User } from '@/lib/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-
 // Generic function to handle API responses and extract error messages
 async function getErrorFromResponse(response: Response): Promise<Error> {
     try {
@@ -17,7 +15,7 @@ async function getErrorFromResponse(response: Response): Promise<Error> {
 
 export async function login(credentials: {email: string, password: string}): Promise<User> {
     try {
-        const res = await fetch(`${API_URL}/auth/login`, {
+        const res = await fetch(`/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials),
@@ -32,7 +30,7 @@ export async function login(credentials: {email: string, password: string}): Pro
 
 export async function forgotPassword(data: {email: string}): Promise<{message: string}> {
     try {
-        const res = await fetch(`${API_URL}/auth/forgot-password`, {
+        const res = await fetch(`/api/auth/forgot-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -50,7 +48,7 @@ export async function forgotPassword(data: {email: string}): Promise<{message: s
 
 export async function getTransactions(): Promise<Transaction[]> {
   try {
-    const res = await fetch(`${API_URL}/transactions`, { cache: 'no-store' });
+    const res = await fetch(`/api/transactions`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
@@ -61,7 +59,7 @@ export async function getTransactions(): Promise<Transaction[]> {
 
 export async function getAmbulances(): Promise<Ambulance[]> {
   try {
-    const res = await fetch(`${API_URL}/ambulances`, { cache: 'no-store' });
+    const res = await fetch(`/api/ambulances`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
@@ -72,7 +70,7 @@ export async function getAmbulances(): Promise<Ambulance[]> {
 
 export async function getAmbulanceById(id: number): Promise<Ambulance> {
   try {
-    const res = await fetch(`${API_URL}/ambulances/${id}`, { cache: 'no-store' });
+    const res = await fetch(`/api/ambulances/${id}`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
@@ -83,7 +81,7 @@ export async function getAmbulanceById(id: number): Promise<Ambulance> {
 
 export async function getTransactionsByAmbulanceId(ambulanceId: number): Promise<Transaction[]> {
   try {
-    const res = await fetch(`${API_URL}/transactions?ambulanceId=${ambulanceId}`, { cache: 'no-store' });
+    const res = await fetch(`/api/transactions?ambulanceId=${ambulanceId}`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
@@ -94,7 +92,7 @@ export async function getTransactionsByAmbulanceId(ambulanceId: number): Promise
 
 export async function getDrivers(): Promise<Driver[]> {
   try {
-    const res = await fetch(`${API_URL}/drivers`, { cache: 'no-store' });
+    const res = await fetch(`/api/drivers`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
@@ -105,7 +103,7 @@ export async function getDrivers(): Promise<Driver[]> {
 
 export async function getEmergencyTechnicians(): Promise<EmergencyTechnician[]> {
   try {
-    const res = await fetch(`${API_URL}/emergency-technicians`, { cache: 'no-store' });
+    const res = await fetch(`/api/emergency-technicians`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
@@ -116,7 +114,7 @@ export async function getEmergencyTechnicians(): Promise<EmergencyTechnician[]> 
 
 export async function getUsers(): Promise<User[]> {
   try {
-    const res = await fetch(`${API_URL}/users`, { cache: 'no-store' });
+    const res = await fetch(`/api/users`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
@@ -130,7 +128,7 @@ export async function getUsers(): Promise<User[]> {
 
 export async function createAmbulance(data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
     try {
-        const res = await fetch(`${API_URL}/ambulances`, {
+        const res = await fetch(`/api/ambulances`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -145,7 +143,7 @@ export async function createAmbulance(data: Partial<Ambulance>): Promise<{messag
 
 export async function updateAmbulance(id: number, data: Partial<Ambulance>): Promise<{message: string, ambulance: Ambulance}> {
     try {
-        const res = await fetch(`${API_URL}/ambulances/${id}`, {
+        const res = await fetch(`/api/ambulances/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -160,7 +158,7 @@ export async function updateAmbulance(id: number, data: Partial<Ambulance>): Pro
 
 export async function deleteAmbulance(id: number): Promise<void> {
     try {
-        const res = await fetch(`${API_URL}/ambulances/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/ambulances/${id}`, { method: 'DELETE' });
         if (!res.ok) throw await getErrorFromResponse(res);
     } catch (error) {
         console.error(`[DELETE_AMBULANCE_ERROR] ID: ${id}`, error);
@@ -173,7 +171,7 @@ export async function deleteAmbulance(id: number): Promise<void> {
 
 export async function createTransaction(data: any): Promise<{message: string, transaction: Transaction}> {
     try {
-        const res = await fetch(`${API_URL}/transactions`, {
+        const res = await fetch(`/api/transactions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -188,7 +186,7 @@ export async function createTransaction(data: any): Promise<{message: string, tr
 
 export async function updateTransaction(id: number, data: any): Promise<{message: string, transaction: Transaction}> {
     try {
-        const res = await fetch(`${API_URL}/transactions/${id}`, {
+        const res = await fetch(`/api/transactions/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -203,7 +201,7 @@ export async function updateTransaction(id: number, data: any): Promise<{message
 
 export async function deleteTransaction(id: number): Promise<void> {
     try {
-        const res = await fetch(`${API_URL}/transactions/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
         if (!res.ok) throw await getErrorFromResponse(res);
     } catch (error) {
         console.error(`[DELETE_TRANSACTION_ERROR] ID: ${id}`, error);
@@ -216,7 +214,7 @@ export async function deleteTransaction(id: number): Promise<void> {
 
 export async function createDriver(data: {name: string}): Promise<{message: string, driver: Driver}> {
     try {
-        const res = await fetch(`${API_URL}/drivers`, {
+        const res = await fetch(`/api/drivers`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -231,7 +229,7 @@ export async function createDriver(data: {name: string}): Promise<{message: stri
 
 export async function updateDriver(id: number, data: {name: string}): Promise<{message: string, driver: Driver}> {
     try {
-        const res = await fetch(`${API_URL}/drivers/${id}`, {
+        const res = await fetch(`/api/drivers/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -246,7 +244,7 @@ export async function updateDriver(id: number, data: {name: string}): Promise<{m
 
 export async function deleteDriver(id: number): Promise<void> {
     try {
-        const res = await fetch(`${API_URL}/drivers/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/drivers/${id}`, { method: 'DELETE' });
         if (!res.ok) throw await getErrorFromResponse(res);
     } catch (error) {
         console.error(`[DELETE_DRIVER_ERROR] ID: ${id}`, error);
@@ -259,7 +257,7 @@ export async function deleteDriver(id: number): Promise<void> {
 
 export async function createTechnician(data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
     try {
-        const res = await fetch(`${API_URL}/emergency-technicians`, {
+        const res = await fetch(`/api/emergency-technicians`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -274,7 +272,7 @@ export async function createTechnician(data: {name: string}): Promise<{message: 
 
 export async function updateTechnician(id: number, data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
     try {
-        const res = await fetch(`${API_URL}/emergency-technicians/${id}`, {
+        const res = await fetch(`/api/emergency-technicians/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -289,7 +287,7 @@ export async function updateTechnician(id: number, data: {name: string}): Promis
 
 export async function deleteTechnician(id: number): Promise<void> {
     try {
-        const res = await fetch(`${API_URL}/emergency-technicians/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/emergency-technicians/${id}`, { method: 'DELETE' });
         if (!res.ok) throw await getErrorFromResponse(res);
     } catch (error) {
         console.error(`[DELETE_TECHNICIAN_ERROR] ID: ${id}`, error);
@@ -302,7 +300,7 @@ export async function deleteTechnician(id: number): Promise<void> {
 
 export async function createUser(data: Partial<User>): Promise<{message: string, user: User}> {
     try {
-        const res = await fetch(`${API_URL}/users`, {
+        const res = await fetch(`/api/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -317,7 +315,7 @@ export async function createUser(data: Partial<User>): Promise<{message: string,
 
 export async function updateUser(id: number, data: Partial<User>): Promise<{message: string, user: User}> {
     try {
-        const res = await fetch(`${API_URL}/users/${id}`, {
+        const res = await fetch(`/api/users/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -332,7 +330,7 @@ export async function updateUser(id: number, data: Partial<User>): Promise<{mess
 
 export async function deleteUser(id: number): Promise<void> {
     try {
-        const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
         if (!res.ok) throw await getErrorFromResponse(res);
     } catch (error) {
         console.error(`[DELETE_USER_ERROR] ID: ${id}`, error);
