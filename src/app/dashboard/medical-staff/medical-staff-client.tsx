@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { EmergencyTechnician } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getColumns } from './columns';
@@ -28,10 +28,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { apiClient } from '@/lib/api-client';
+import { getEmergencyTechnicians, createTechnician, updateTechnician, deleteTechnician } from '@/lib/data';
 
-export default function MedicalStaffClient({ initialMedicalStaff }: { initialMedicalStaff: EmergencyTechnician[] }) {
-  const [medicalStaff, setMedicalStaff] = useState<EmergencyTechnician[]>(initialMedicalStaff);
+export default function MedicalStaffClient({ initialMedicalStaff: initialData }: { initialMedicalStaff: EmergencyTechnician[] }) {
+  const [medicalStaff, setMedicalStaff] = useState<EmergencyTechnician[]>(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<EmergencyTechnician | null>(null);
   const [formData, setFormData] = useState({ name: '' });
@@ -42,6 +42,25 @@ export default function MedicalStaffClient({ initialMedicalStaff }: { initialMed
   const [staffToDelete, setStaffToDelete] = useState<EmergencyTechnician | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  const fetchTechnicians = useCallback(async () => {
+    try {
+      const data = await getEmergencyTechnicians();
+      setMedicalStaff(data);
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (err as Error).message,
+      });
+    }
+  }, [toast]);
+  
+  useEffect(() => {
+    if (!initialData) {
+      fetchTechnicians();
+    }
+  }, [initialData, fetchTechnicians]);
 
   const handleOpenModal = (staff: EmergencyTechnician | null) => {
     setEditingStaff(staff);
@@ -65,13 +84,12 @@ export default function MedicalStaffClient({ initialMedicalStaff }: { initialMed
     
     try {
         if (editingStaff) {
-            const resData = await apiClient.put(`/emergency-technicians/${editingStaff.id}`, formData);
-            setMedicalStaff(medicalStaff.map(s => s.id === editingStaff.id ? resData.technician : s));
+            await updateTechnician(editingStaff.id, formData);
         } else {
-            const resData = await apiClient.post('/emergency-technicians', formData);
-            setMedicalStaff([resData.technician, ...medicalStaff]);
+            await createTechnician(formData);
         }
         
+        await fetchTechnicians();
         toast({
             title: "Success",
             description: `Emergency Technician ${editingStaff ? 'updated' : 'created'} successfully.`,
@@ -99,8 +117,8 @@ export default function MedicalStaffClient({ initialMedicalStaff }: { initialMed
     setIsDeleting(true);
      
     try {
-        await apiClient.delete(`/emergency-technicians/${staffToDelete.id}`);
-        setMedicalStaff(medicalStaff.filter(s => s.id !== staffToDelete.id));
+        await deleteTechnician(staffToDelete.id);
+        await fetchTechnicians();
         toast({ title: "Success", description: "Emergency Technician deleted successfully." });
     } catch (error) {
         toast({ variant: 'destructive', title: "Error", description: (error as Error).message });
@@ -116,9 +134,8 @@ export default function MedicalStaffClient({ initialMedicalStaff }: { initialMed
     setIsBulkDeleting(true);
     
     try {
-        await Promise.all(ids.map(id => apiClient.delete(`/emergency-technicians/${id}`)));
-
-        setMedicalStaff(medicalStaff.filter(s => !ids.includes(s.id)));
+        await Promise.all(ids.map(id => deleteTechnician(id)));
+        await fetchTechnicians();
         toast({ title: "Success", description: `${ids.length} technician(s) deleted successfully.` });
     } catch (error) {
         toast({ variant: 'destructive', title: 'Bulk Delete Error', description: (error as Error).message });

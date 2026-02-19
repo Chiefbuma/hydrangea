@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getColumns } from './columns';
@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { apiClient } from '@/lib/api-client';
+import { getUsers, createUser, updateUser, deleteUser } from '@/lib/data';
 
 type UserFormData = {
     name: string;
@@ -57,13 +57,29 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  
+  const fetchUsers = useCallback(async () => {
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (err as Error).message,
+      });
+    }
+  }, [toast]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('loggedInUser');
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
-  }, []);
+    if (!initialUsers) {
+      fetchUsers();
+    }
+  }, [initialUsers, fetchUsers]);
 
   const handleOpenModal = (user: User | null) => {
     setEditingUser(user);
@@ -98,17 +114,12 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
 
     try {
         if (editingUser) {
-            const resData = await apiClient.put(`/users/${editingUser.id}`, body);
-            setUsers(users.map(u => u.id === editingUser.id ? resData.user : u));
+            await updateUser(editingUser.id, body);
         } else {
-            // There is no POST /api/users, this will fail. Assuming one should be created.
-            // For now, let's assume a similar response structure.
-            // This part of the code is not used based on the current API routes.
-            // If you add POST /api/users, it will work.
-            const resData = await apiClient.post('/users', body);
-            setUsers([resData.user, ...users]);
+            await createUser(body);
         }
-
+        
+        await fetchUsers();
         toast({
             title: "Success",
             description: `User ${editingUser ? 'updated' : 'created'} successfully.`,
@@ -139,8 +150,8 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
     setIsDeleting(true);
     
     try {
-        await apiClient.delete(`/users/${userToDelete.id}`);
-        setUsers(users.filter(u => u.id !== userToDelete.id));
+        await deleteUser(userToDelete.id);
+        await fetchUsers();
         toast({ title: "Success", description: "User deleted successfully." });
     } catch (error) {
         toast({ variant: "destructive", title: "Error", description: (error as Error).message });
@@ -164,9 +175,8 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
     setIsBulkDeleting(true);
 
     try {
-        await Promise.all(safeIds.map(id => apiClient.delete(`/users/${id}`)));
-
-        setUsers(users.filter(u => !safeIds.includes(u.id)));
+        await Promise.all(safeIds.map(id => deleteUser(id)));
+        await fetchUsers();
         toast({ title: "Success", description: `${safeIds.length} user(s) deleted successfully.` });
     } catch (error) {
         toast({ variant: 'destructive', title: 'Bulk Delete Error', description: (error as Error).message });

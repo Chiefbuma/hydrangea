@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Driver } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getColumns } from './columns';
@@ -27,11 +27,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { apiClient } from '@/lib/api-client';
+} from "@/components/ui/alert-dialog";
+import { getDrivers, createDriver, updateDriver, deleteDriver } from '@/lib/data';
 
-export default function DriversClient({ initialDrivers }: { initialDrivers: Driver[] }) {
-  const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
+export default function DriversClient({ initialDrivers: initialData }: { initialDrivers: Driver[] }) {
+  const [drivers, setDrivers] = useState<Driver[]>(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [formData, setFormData] = useState({ name: '' });
@@ -42,6 +42,25 @@ export default function DriversClient({ initialDrivers }: { initialDrivers: Driv
   const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  
+  const fetchDrivers = useCallback(async () => {
+    try {
+      const data = await getDrivers();
+      setDrivers(data);
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: (err as Error).message,
+      });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (!initialData) {
+      fetchDrivers();
+    }
+  }, [initialData, fetchDrivers]);
 
   const handleOpenModal = (driver: Driver | null) => {
     setEditingDriver(driver);
@@ -65,13 +84,12 @@ export default function DriversClient({ initialDrivers }: { initialDrivers: Driv
     
     try {
         if (editingDriver) {
-            const resData = await apiClient.put(`/drivers/${editingDriver.id}`, formData);
-            setDrivers(drivers.map(d => d.id === editingDriver.id ? resData.driver : d));
+            await updateDriver(editingDriver.id, formData);
         } else {
-            const resData = await apiClient.post('/drivers', formData);
-            setDrivers([resData.driver, ...drivers]);
+            await createDriver(formData);
         }
         
+        await fetchDrivers();
         toast({
             title: "Success",
             description: `Driver ${editingDriver ? 'updated' : 'created'} successfully.`,
@@ -99,8 +117,8 @@ export default function DriversClient({ initialDrivers }: { initialDrivers: Driv
     setIsDeleting(true);
      
     try {
-        await apiClient.delete(`/drivers/${driverToDelete.id}`);
-        setDrivers(drivers.filter(d => d.id !== driverToDelete.id));
+        await deleteDriver(driverToDelete.id);
+        await fetchDrivers();
         toast({ title: "Success", description: "Driver deleted successfully." });
     } catch (error) {
         toast({ variant: 'destructive', title: "Error", description: (error as Error).message });
@@ -116,9 +134,8 @@ export default function DriversClient({ initialDrivers }: { initialDrivers: Driv
     setIsBulkDeleting(true);
     
     try {
-        await Promise.all(ids.map(id => apiClient.delete(`/drivers/${id}`)));
-
-        setDrivers(drivers.filter(d => !ids.includes(d.id)));
+        await Promise.all(ids.map(id => deleteDriver(id)));
+        await fetchDrivers();
         toast({ title: "Success", description: `${ids.length} driver(s) deleted successfully.` });
     } catch (error) {
         toast({ variant: 'destructive', title: 'Bulk Delete Error', description: (error as Error).message });

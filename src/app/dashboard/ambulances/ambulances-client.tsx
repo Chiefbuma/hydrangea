@@ -35,9 +35,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getAmbulances } from '@/lib/data';
+import { getAmbulances, createAmbulance, updateAmbulance, deleteAmbulance } from '@/lib/data';
 import { Card, CardContent } from '@/components/ui/card';
-import { apiClient } from '@/lib/api-client';
 
 export default function AmbulancesClient() {
   const [ambulances, setAmbulances] = useState<Ambulance[] | null>(null);
@@ -93,9 +92,9 @@ export default function AmbulancesClient() {
     
     try {
         if (editingAmbulance) {
-            await apiClient.put(`/ambulances/${editingAmbulance.id}`, formData);
+            await updateAmbulance(editingAmbulance.id, formData);
         } else {
-            await apiClient.post('/ambulances', formData);
+            await createAmbulance(formData);
         }
 
         await fetchAmbulances();
@@ -128,7 +127,7 @@ export default function AmbulancesClient() {
      setIsDeleting(true);
 
      try {
-        await apiClient.delete(`/ambulances/${ambulanceToDelete.id}`);
+        await deleteAmbulance(ambulanceToDelete.id);
         
         await fetchAmbulances();
 
@@ -154,7 +153,7 @@ export default function AmbulancesClient() {
     if (ids.length === 0) return;
     setIsBulkDeleting(true);
 
-    const deletePromises = ids.map(id => apiClient.delete(`/ambulances/${id}`));
+    const deletePromises = ids.map(id => deleteAmbulance(id));
 
     try {
         await Promise.all(deletePromises);

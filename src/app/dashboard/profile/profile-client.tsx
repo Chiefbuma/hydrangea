@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
+import { updateUser } from '@/lib/data';
 
 export default function ProfileClient() {
   const [user, setUser] = useState<User | null>(null);
@@ -42,7 +42,7 @@ export default function ProfileClient() {
     }
 
     try {
-        const resData = await apiClient.put(`/users/${user.id}`, body);
+        const resData = await updateUser(user.id, body);
 
         const updatedUser = resData.user;
         localStorage.setItem('loggedInUser', JSON.stringify(updatedUser));

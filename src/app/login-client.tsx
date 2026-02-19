@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/logo';
-import { apiClient } from '@/lib/api-client';
+import { login } from '@/lib/data';
 
 export default function LoginClient() {
   const [email, setEmail] = useState('');
@@ -24,7 +24,7 @@ export default function LoginClient() {
     setLoading(true);
 
     try {
-      const data = await apiClient.post('/auth/login', { email, password });
+      const data = await login({ email, password });
 
       localStorage.setItem('loggedInUser', JSON.stringify(data));
       

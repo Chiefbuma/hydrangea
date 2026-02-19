@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { Ambulance, Transaction, Driver, EmergencyTechnician } from '@/lib/types';
-import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getEmergencyTechnicians } from '@/lib/data';
+import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getEmergencyTechnicians, createTransaction, updateTransaction, deleteTransaction } from '@/lib/data';
 import {
   Card,
   CardContent,
@@ -71,7 +71,6 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { exportDetailedToExcel } from '@/lib/excel-export';
-import { apiClient } from '@/lib/api-client';
 
 const DetailItem = ({
   label,
@@ -207,7 +206,7 @@ export default function AmbulanceDetailsClient() {
     };
     
     try {
-        await apiClient.post('/transactions', body);
+        await createTransaction(body);
         
         toast({
             title: 'Success',
@@ -235,7 +234,7 @@ export default function AmbulanceDetailsClient() {
     setIsDeleting(true);
     try {
       await Promise.all(
-        selectedIds.map(id => apiClient.delete(`/transactions/${id}`))
+        selectedIds.map(id => deleteTransaction(Number(id)))
       );
       
       toast({
@@ -281,7 +280,7 @@ export default function AmbulanceDetailsClient() {
     };
 
     try {
-      await apiClient.put(`/transactions/${editingTransaction.id}`, body);
+      await updateTransaction(editingTransaction.id, body);
       
       toast({
         title: 'Success',
@@ -313,7 +312,7 @@ export default function AmbulanceDetailsClient() {
 
     setIsDeleting(true);
     try {
-      await apiClient.delete(`/transactions/${transactionToDelete.id}`);
+      await deleteTransaction(transactionToDelete.id);
 
       toast({
         title: 'Success',
