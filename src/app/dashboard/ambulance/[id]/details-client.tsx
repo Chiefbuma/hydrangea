@@ -490,7 +490,7 @@ export default function AmbulanceDetailsClient() {
 
   return (
     <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Button asChild variant="outline" size="icon">
               <Link href="/dashboard/ambulances">
@@ -555,7 +555,7 @@ export default function AmbulanceDetailsClient() {
           <div className="lg:col-span-3 space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                   <div>
                     <CardTitle>Recent Transactions</CardTitle>
                     <CardDescription>
@@ -566,6 +566,7 @@ export default function AmbulanceDetailsClient() {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
+                      if (!transactions) return;
                       const periodLabel = `All transactions for ${ambulance.reg_no}`;
                       exportDetailedToExcel(transactions, periodLabel);
                     }}

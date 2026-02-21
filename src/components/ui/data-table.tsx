@@ -49,7 +49,7 @@ export function DataTableToolbar<TData>({
     const isFiltered = !!table.getState().globalFilter;
 
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex flex-1 items-center space-x-2">
                 <Input
                     placeholder="Search all columns..."
@@ -57,7 +57,7 @@ export function DataTableToolbar<TData>({
                     onChange={(event) =>
                         table.setGlobalFilter(event.target.value)
                     }
-                    className="h-8 w-[150px] lg:w-[250px]"
+                    className="h-8 w-full sm:w-[150px] lg:w-[250px]"
                 />
                 {isFiltered && (
                     <Button
@@ -86,12 +86,12 @@ export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="flex-1 text-sm text-muted-foreground">
+    <div className="flex flex-col-reverse items-center justify-between gap-4 px-2 sm:flex-row">
+      <div className="flex-1 text-sm text-muted-foreground self-center sm:self-auto">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select

@@ -197,20 +197,20 @@ export default function AdminDashboardClient() {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Dashboard</h1>
                     <p className="text-muted-foreground">High-level overview of fleet performance.</p>
                 </div>
-                <div className="flex items-end gap-4">
-                    <div className="grid gap-2">
+                <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-end sm:gap-4">
+                    <div className="grid w-full gap-2 sm:w-auto">
                         <Label htmlFor="start-date">Start Date</Label>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     id="start-date"
                                     variant={"outline"}
-                                    className={cn("w-[180px] justify-start text-left font-normal")}
+                                    className={cn("w-full justify-start text-left font-normal sm:w-[180px]")}
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                     {dateRange.from ? format(dateRange.from, "LLL dd, y") : <span>Pick a date</span>}
@@ -229,14 +229,14 @@ export default function AdminDashboardClient() {
                             </PopoverContent>
                         </Popover>
                     </div>
-                    <div className="grid gap-2">
+                    <div className="grid w-full gap-2 sm:w-auto">
                         <Label htmlFor="end-date">End Date</Label>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     id="end-date"
                                     variant={"outline"}
-                                    className={cn("w-[180px] justify-start text-left font-normal")}
+                                    className={cn("w-full justify-start text-left font-normal sm:w-[180px]")}
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                     {dateRange.to ? format(dateRange.to, "LLL dd, y") : <span>Pick a date</span>}
@@ -314,37 +314,39 @@ export default function AdminDashboardClient() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Metric</TableHead>
-                                        <TableHead className="text-right">{format(currentMonthRange.from, "MMM")}({format(currentMonthRange.from, "d")}-{format(currentMonthRange.to, "d")})</TableHead>
-                                        <TableHead className="text-right">{format(previousMonthRange.from, "MMM")}({format(previousMonthRange.from, "d")}-{format(previousMonthRange.to, "d")})</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Cash Deposited</TableCell>
-                                        <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_cash_deposited)}</TableCell>
-                                        <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_cash_deposited)}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Total Till</TableCell>
-                                        <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_till)}</TableCell>
-                                        <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_till)}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Net Banked</TableCell>
-                                        <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_net_banked)}</TableCell>
-                                        <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_net_banked)}</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">Deficit</TableCell>
-                                        <TableCell className="text-right text-red-500 font-semibold">{formatCurrency(dashboardData.total_deficit)}</TableCell>
-                                        <TableCell className="text-right text-red-500 font-semibold">{formatCurrency(previousMonthData?.total_deficit)}</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
+                           <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Metric</TableHead>
+                                            <TableHead className="text-right">{format(currentMonthRange.from, "MMM")}({format(currentMonthRange.from, "d")}-{format(currentMonthRange.to, "d")})</TableHead>
+                                            <TableHead className="text-right">{format(previousMonthRange.from, "MMM")}({format(previousMonthRange.from, "d")}-{format(previousMonthRange.to, "d")})</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell className="font-medium">Cash Deposited</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_cash_deposited)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_cash_deposited)}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell className="font-medium">Total Till</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_till)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_till)}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell className="font-medium">Net Banked</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_net_banked)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_net_banked)}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell className="font-medium">Deficit</TableCell>
+                                            <TableCell className="text-right text-red-500 font-semibold">{formatCurrency(dashboardData.total_deficit)}</TableCell>
+                                            <TableCell className="text-right text-red-500 font-semibold">{formatCurrency(previousMonthData?.total_deficit)}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                           </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -352,14 +354,14 @@ export default function AdminDashboardClient() {
             {filteredDashboardData && (
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                             <div>
                                 <CardTitle>Ambulance Performance Analysis</CardTitle>
                                 <CardDescription>
                                     Period: {format(dateRange.from, "MMMM d, yyyy")} - {format(dateRange.to, "MMMM d, yyyy")}
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
                                 <Button 
                                     variant="outline" 
                                     size="sm"

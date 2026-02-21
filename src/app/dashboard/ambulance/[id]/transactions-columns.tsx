@@ -89,11 +89,11 @@ export const getColumns = ({ isAdmin, onEdit, onDelete }: TransactionColumnsProp
     cell: ({ row }) => {
       const transaction = row.original;
       return (
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-1 justify-center sm:gap-2">
             <Button
                 variant="outline"
                 size="icon"
-                className="h-7 w-7"
+                className="h-7 w-7 sm:h-8 sm:w-8"
                 onClick={() => onEdit(transaction)}
             >
                 <Edit2 className="h-4 w-4" />
@@ -103,7 +103,7 @@ export const getColumns = ({ isAdmin, onEdit, onDelete }: TransactionColumnsProp
                 <Button
                     variant="destructive"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-7 w-7 sm:h-8 sm:w-8"
                     onClick={() => onDelete(transaction)}
                 >
                     <Trash2 className="h-4 w-4" />

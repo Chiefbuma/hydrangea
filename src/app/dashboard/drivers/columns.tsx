@@ -46,11 +46,11 @@ export const getColumns = ({ onEdit, onDelete }: DriversColumnsProps): ColumnDef
     cell: ({ row }) => {
       const driver = row.original
       return (
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-1 justify-end sm:gap-2">
             <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-7 w-7 sm:h-8 sm:w-8"
                 onClick={() => onEdit(driver)}
             >
                 <Edit className="h-4 w-4" />
@@ -59,7 +59,7 @@ export const getColumns = ({ onEdit, onDelete }: DriversColumnsProps): ColumnDef
             <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-red-600 hover:text-red-600"
+                className="h-7 w-7 sm:h-8 sm:w-8 text-red-600 hover:text-red-600"
                 onClick={() => onDelete(driver)}
             >
                 <Trash2 className="h-4 w-4" />
