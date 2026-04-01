@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import type { Ambulance, Transaction, Driver, EmergencyTechnician } from '@/lib/types';
-import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getEmergencyTechnicians, createTransaction, updateTransaction, deleteTransaction } from '@/services/api-service';
+import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getEmergencyTechnicians, updateTransaction, deleteTransaction } from '@/services/api-service';
 import {
   Card,
   CardContent,
@@ -18,7 +18,6 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -71,6 +70,8 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { exportDetailedToExcel } from '@/lib/excel-export';
+import { getCurrentUser } from '@/services/api-service';
+import CreateTransactionDialog from '@/components/create-transaction-dialog';
 
 const DetailItem = ({
   label,
@@ -101,7 +102,6 @@ const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style
 
 export default function AmbulanceDetailsClient() {
   const { toast } = useToast();
-  const router = useRouter();
   const params = useParams();
   const ambulanceId = Number(params.id);
   
@@ -135,7 +135,7 @@ export default function AmbulanceDetailsClient() {
 
   const fetchPageData = useCallback(async () => {
     if (!ambulanceId || isNaN(ambulanceId)) {
-      setError('Invalid ambulance ID.');
+      setError('Invalid vehicle ID.');
       setLoading(false);
       return;
     }
@@ -159,7 +159,7 @@ export default function AmbulanceDetailsClient() {
       }));
 
     } catch (err) {
-      setError('Failed to load ambulance data. It may not exist.');
+      setError('Failed to load vehicle data. It may not exist.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -167,12 +167,23 @@ export default function AmbulanceDetailsClient() {
   }, [ambulanceId]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('loggedInUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    getCurrentUser().then(setUser).catch(() => setUser(null));
     fetchPageData();
   }, [fetchPageData]);
+
+  useEffect(() => {
+    const handleTransactionCreated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ ambulanceId: number }>;
+      if (customEvent.detail?.ambulanceId === ambulanceId) {
+        fetchPageData();
+      }
+    };
+
+    window.addEventListener('transaction:created', handleTransactionCreated as EventListener);
+    return () => {
+      window.removeEventListener('transaction:created', handleTransactionCreated as EventListener);
+    };
+  }, [ambulanceId, fetchPageData]);
 
 
   const handleTechnicianSelection = (technicianId: number) => {
@@ -184,50 +195,6 @@ export default function AmbulanceDetailsClient() {
     })
   };
 
-  const resetTransactionForm = useCallback(() => {
-    setTransactionFormData({
-        date: new Date().toISOString().split('T')[0],
-        driver_id: '',
-        emergency_technician_ids: [] as number[],
-        total_till: '',
-        fuel: String(ambulance?.fuel_cost || 0),
-        operation: String(ambulance?.operation_cost || 0),
-        cash_deposited_by_staff: '',
-    });
-  }, [ambulance]);
-
-  const handleAddTransaction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const body = {
-      ...transactionFormData,
-      ambulance_id: ambulance?.id
-    };
-    
-    try {
-        await createTransaction(body);
-        
-        toast({
-            title: 'Success',
-            description: 'Transaction added successfully.'
-        });
-        
-        resetTransactionForm();
-        setIsTransactionModalOpen(false);
-        await fetchPageData();
-
-    } catch (error) {
-         toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: (error as Error).message
-        });
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
-  
   const handleBulkDelete = async (selectedIds: string[]) => {
     if (selectedIds.length === 0) return;
     
@@ -341,7 +308,7 @@ export default function AmbulanceDetailsClient() {
   }), [user?.role]);
 
   const transactionForm = (
-    <form onSubmit={editingTransaction ? handleSaveEdit : handleAddTransaction}>
+    <form onSubmit={handleSaveEdit}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
             <div className="space-y-2">
                 <Label htmlFor="date">Transaction Date</Label>
@@ -361,17 +328,17 @@ export default function AmbulanceDetailsClient() {
                 </Select>
             </div>
             <div className="space-y-2">
-                <Label>Emergency Technicians</Label>
+                <Label>Assistants</Label>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-full justify-start font-normal">
                             <Users className="mr-2 h-4 w-4" />
-                            <span>{transactionFormData.emergency_technician_ids.length > 0 ? `${transactionFormData.emergency_technician_ids.length} selected` : 'Select Technicians'}</span>
+                            <span>{transactionFormData.emergency_technician_ids.length > 0 ? `${transactionFormData.emergency_technician_ids.length} selected` : 'Select Assistants'}</span>
                             <ChevronDown className="ml-auto h-4 w-4 opacity-50"/>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]" align="start">
-                         <DropdownMenuLabel>Select Technicians</DropdownMenuLabel>
+                         <DropdownMenuLabel>Select Assistants</DropdownMenuLabel>
                          <DropdownMenuSeparator />
                         {emergencyTechnicians.map(tech => (
                             <DropdownMenuCheckboxItem
@@ -409,7 +376,7 @@ export default function AmbulanceDetailsClient() {
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {isSubmitting ? 'Saving...' : (editingTransaction ? 'Save Changes' : 'Save Transaction')}
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
         </DialogFooter>
     </form>
@@ -417,26 +384,23 @@ export default function AmbulanceDetailsClient() {
 
   const CustomToolbarActions = (
     <div className="flex gap-2">
-      <Dialog open={isTransactionModalOpen} onOpenChange={setIsTransactionModalOpen}>
-        <DialogTrigger asChild>
-          <Button onClick={() => {
-            setEditingTransaction(null);
-            resetTransactionForm();
-          }}>
+      <CreateTransactionDialog
+        open={isTransactionModalOpen}
+        onOpenChange={setIsTransactionModalOpen}
+        defaultAmbulanceId={ambulance?.id}
+        lockVehicle
+        title={`Add New Transaction for ${ambulance?.reg_no ?? 'Vehicle'}`}
+        description="Fill in the form below to log a new financial record for this vehicle."
+        onSuccess={async () => {
+          await fetchPageData();
+        }}
+        trigger={(
+          <Button onClick={() => setEditingTransaction(null)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Transaction
           </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Add New Transaction for {ambulance?.reg_no}</DialogTitle>
-            <CardDescription>
-              Fill in the form below to log a new financial record for this ambulance.
-            </CardDescription>
-          </DialogHeader>
-          {transactionForm}
-        </DialogContent>
-      </Dialog>
+        )}
+      />
     </div>
   );
   
@@ -482,7 +446,7 @@ export default function AmbulanceDetailsClient() {
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle>Error</CardTitle>
-          <CardDescription>{error || 'Ambulance not found.'}</CardDescription>
+          <CardDescription>{error || 'Vehicle not found.'}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -495,13 +459,13 @@ export default function AmbulanceDetailsClient() {
             <Button asChild variant="outline" size="icon">
               <Link href="/dashboard/ambulances">
                 <ArrowLeft className="h-4 w-4" />
-                <span className="sr-only">Back to Ambulances</span>
+                <span className="sr-only">Back to Fleet</span>
               </Link>
             </Button>
             <div>
               <h1 className="text-3xl font-bold font-headline tracking-tight">{ambulance.reg_no}</h1>
               <p className="text-muted-foreground">
-                Ambulance Financial Dashboard
+                {ambulance.vehicle_type === 'bus' ? 'Bus' : 'Ambulance'} Financial Dashboard
               </p>
             </div>
           </div>
@@ -518,7 +482,7 @@ export default function AmbulanceDetailsClient() {
                     </Avatar>
                      <div className="grid gap-1">
                         <CardTitle className="text-2xl">{ambulance.reg_no}</CardTitle>
-                        <CardDescription>Ambulance Details</CardDescription>
+                        <CardDescription className="capitalize">{ambulance.vehicle_type} Details</CardDescription>
                     </div>
                 </CardHeader>
               <CardContent className="space-y-4 pt-4">
@@ -559,7 +523,7 @@ export default function AmbulanceDetailsClient() {
                   <div>
                     <CardTitle>Recent Transactions</CardTitle>
                     <CardDescription>
-                      A list of all financial records for this ambulance.
+                      A list of all financial records for this vehicle.
                     </CardDescription>
                   </div>
                   <Button 

@@ -24,12 +24,21 @@ const formatPercentage = (value: number | null | undefined) => {
 export const columns: ColumnDef<AmbulancePerformanceData & { id: number }>[] = [
     {
         accessorKey: "reg_no",
-        header: "Ambulance",
+        header: "Vehicle",
         cell: ({ row }) => {
             return (
                 <div className="font-medium">{row.original.reg_no}</div>
             )
         },
+    },
+    {
+        accessorKey: "vehicle_type",
+        header: "Type",
+        cell: ({ row }) => (
+            <Badge variant="outline" className="capitalize">
+                {row.original.vehicle_type}
+            </Badge>
+        ),
     },
     {
         accessorKey: "total_till",

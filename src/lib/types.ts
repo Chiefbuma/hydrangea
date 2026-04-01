@@ -1,3 +1,5 @@
+export type VehicleType = 'bus' | 'ambulance';
+
 export type User = {
   id: number;
   name: string;
@@ -9,6 +11,7 @@ export type User = {
 
 export type Ambulance = {
   id: number;
+  vehicle_type: VehicleType;
   reg_no: string;
   fuel_cost: number;
   operation_cost: number;
@@ -54,6 +57,7 @@ export type Transaction = {
 
 export type AmbulancePerformanceData = {
     ambulanceId: number;
+    vehicle_type: VehicleType;
     reg_no: string;
     total_target: number;
     total_net_banked: number;

@@ -6,13 +6,15 @@ import { useEffect, useState } from 'react';
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Truck, LayoutDashboard, Settings, Loader2 } from 'lucide-react';
+import { Truck, LayoutDashboard, Settings, Loader2, PlusCircle } from 'lucide-react';
 import type { User as AppUser } from '@/lib/types';
 import Logo from '@/components/logo';
+import { getCurrentUser } from '@/services/api-service';
+import CreateTransactionDialog from '@/components/create-transaction-dialog';
 
 const navLinks = [
   { href: '/dashboard/admin', label: 'Admin Dashboard', icon: LayoutDashboard, admin: true },
-  { href: '/dashboard/ambulances', label: 'Ambulances', icon: Truck, admin: false },
+  { href: '/dashboard/ambulances', label: 'Fleet', icon: Truck, admin: false },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, admin: true },
 ]
 
@@ -27,19 +29,19 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('loggedInUser');
-    if (storedUser) {
+    async function loadUser() {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
-        localStorage.removeItem('loggedInUser');
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Failed to load current user', error);
         router.replace('/');
+      } finally {
+        setLoading(false);
       }
-    } else {
-      router.replace('/'); // Redirect to login if no user
     }
-    setLoading(false);
+
+    loadUser();
   }, [router]);
 
 
@@ -74,6 +76,25 @@ export default function DashboardLayout({
             <Logo className="h-8 w-auto" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
+             <CreateTransactionDialog
+               title="Create New Transaction"
+               description="Create a transaction and assign it to the correct bus or ambulance."
+               onSuccess={(vehicleId) => {
+                 const targetPath = `/dashboard/ambulance/${vehicleId}`;
+                 window.dispatchEvent(new CustomEvent('transaction:created', { detail: { ambulanceId: vehicleId } }));
+                 if (pathname !== targetPath) {
+                   router.push(targetPath);
+                 } else {
+                   router.refresh();
+                 }
+               }}
+               trigger={(
+                 <Button size="sm">
+                   <PlusCircle className="mr-0 h-4 w-4 sm:mr-2" />
+                   <span className="hidden sm:inline">New Transaction</span>
+                 </Button>
+               )}
+             />
              {renderNavLinks(navLinks)}
             <Header user={user} />
           </div>

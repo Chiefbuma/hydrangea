@@ -15,13 +15,18 @@ import { Button } from '@/components/ui/button';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
 import Link from 'next/link';
+import { logout } from '@/services/api-service';
 
 export default function Header({ user }: { user: User }) {
   const router = useRouter();
 
-  const handleLogout = () => {
-    localStorage.removeItem('loggedInUser');
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      router.push('/');
+      router.refresh();
+    }
   };
 
   return (

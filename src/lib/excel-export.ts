@@ -1,112 +1,123 @@
-import * as XLSX from 'xlsx';
+function triggerDownload(buffer: ArrayBuffer, fileName: string) {
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function addHeaderRow(worksheet: any, values: string[]) {
+  const headerRow = worksheet.addRow(values);
+  headerRow.font = { bold: true };
+  headerRow.eachCell((cell: any) => {
+    cell.alignment = { vertical: 'middle', horizontal: 'left' };
+  });
+}
+
+function setColumnWidths(worksheet: any, widths: number[]) {
+  worksheet.columns = widths.map((width) => ({ width }));
+}
+
+async function createWorkbook() {
+  const ExcelJS = await import('exceljs/dist/exceljs.min.js');
+  return new ExcelJS.Workbook();
+}
 
 /**
- * Export ambulance performance summary to Excel
+ * Export fleet performance summary to Excel
  */
-export function exportSummaryToExcel(
+export async function exportSummaryToExcel(
   data: any[],
   periodLabel: string
 ) {
-  const fileName = `Ambulance_Performance_Summary_${new Date().toISOString().split('T')[0]}.xlsx`;
-  
-  // Format data for export, removing ambulanceId and performance
-  const formattedData = data.map(item => ({
-    'Ambulance': item.reg_no,
-    'Total Till': item.total_till,
-    'Cash Deposited': item.total_cash_deposited,
-    'Net Banked': item.total_net_banked,
-    'Deficit': item.total_deficit,
-  }));
-  
-  // Create worksheet with data
-  const ws = XLSX.utils.json_to_sheet(formattedData);
-  
-  // Set column widths
-  ws['!cols'] = [
-    { wch: 15 }, // Ambulance
-    { wch: 18 }, // Total Till
-    { wch: 18 }, // Cash Deposited
-    { wch: 15 }, // Net Banked
-    { wch: 12 }, // Deficit
-  ];
-  
-  // Create workbook
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Summary');
-  
-  // Add metadata sheet
-  const metaWs = XLSX.utils.aoa_to_sheet([
-    ['Ambulance Performance Analysis'],
-    ['Period', periodLabel],
-    ['Generated', new Date().toLocaleString()],
-  ]);
-  XLSX.utils.book_append_sheet(wb, metaWs, 'Info');
-  
-  // Write file
-  XLSX.writeFile(wb, fileName);
+  const fileName = `Fleet_Performance_Summary_${new Date().toISOString().split('T')[0]}.xlsx`;
+  const workbook = await createWorkbook();
+  const summarySheet = workbook.addWorksheet('Summary');
+  const infoSheet = workbook.addWorksheet('Info');
+
+  addHeaderRow(summarySheet, ['Vehicle', 'Total Till', 'Cash Deposited', 'Net Banked', 'Deficit']);
+  data.forEach((item) => {
+    summarySheet.addRow([
+      item.reg_no,
+      item.total_till,
+      item.total_cash_deposited,
+      item.total_net_banked,
+      item.total_deficit,
+    ]);
+  });
+  setColumnWidths(summarySheet, [15, 18, 18, 15, 12]);
+
+  infoSheet.addRow(['Fleet Performance Analysis']);
+  infoSheet.addRow(['Period', periodLabel]);
+  infoSheet.addRow(['Generated', new Date().toLocaleString()]);
+  infoSheet.getRow(1).font = { bold: true };
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  triggerDownload(buffer as ArrayBuffer, fileName);
 }
 
 /**
  * Export detailed transactions to Excel
  */
-export function exportDetailedToExcel(
+export async function exportDetailedToExcel(
   data: any[],
   periodLabel: string
 ) {
   const fileName = `Transaction_Details_${new Date().toISOString().split('T')[0]}.xlsx`;
-  
-  // Format data for export
-  const formattedData = data.map(row => ({
-    'Date': new Date(row.date).toLocaleDateString(),
-    'Ambulance': row.ambulance?.reg_no || '-',
-    'Driver': row.driver?.name || '-',
-    'Total Till': row.total_till,
-    'Target': row.target,
-    'Fuel': row.fuel,
-    'Operation': row.operation,
-    'Cash Deposited': row.cash_deposited_by_staff,
-    'Amount Paid to Till': row.amount_paid_to_the_till,
-    'Offload': row.offload,
-    'Operations Cost': row.operations_cost,
-    'Net Banked': row.net_banked,
-    'Deficit': row.deficit,
-    'Performance': (row.performance * 100).toFixed(0) + '%',
-  }));
-  
-  // Create worksheet
-  const ws = XLSX.utils.json_to_sheet(formattedData);
-  
-  // Set column widths
-  ws['!cols'] = [
-    { wch: 12 },  // Date
-    { wch: 12 },  // Ambulance
-    { wch: 15 },  // Driver
-    { wch: 12 },  // Total Till
-    { wch: 12 },  // Target
-    { wch: 10 },  // Fuel
-    { wch: 12 },  // Operation
-    { wch: 15 },  // Cash Deposited
-    { wch: 16 },  // Amount Paid to Till
-    { wch: 10 },  // Offload
-    { wch: 15 },  // Operations Cost
-    { wch: 12 },  // Net Banked
-    { wch: 10 },  // Deficit
-    { wch: 12 },  // Performance
-  ];
-  
-  // Create workbook
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
-  
-  // Add metadata sheet
-  const metaWs = XLSX.utils.aoa_to_sheet([
-    ['Transaction Details'],
-    ['Period', periodLabel],
-    ['Total Records', formattedData.length],
-    ['Generated', new Date().toLocaleString()],
+  const workbook = await createWorkbook();
+  const transactionsSheet = workbook.addWorksheet('Transactions');
+  const infoSheet = workbook.addWorksheet('Info');
+
+  addHeaderRow(transactionsSheet, [
+    'Date',
+    'Vehicle',
+    'Driver',
+    'Total Till',
+    'Target',
+    'Fuel',
+    'Operation',
+    'Cash Deposited',
+    'Amount Paid to Till',
+    'Offload',
+    'Operations Cost',
+    'Net Banked',
+    'Deficit',
+    'Performance',
   ]);
-  XLSX.utils.book_append_sheet(wb, metaWs, 'Info');
-  
-  // Write file
-  XLSX.writeFile(wb, fileName);
+
+  data.forEach((row) => {
+    transactionsSheet.addRow([
+      new Date(row.date).toLocaleDateString(),
+      row.ambulance?.reg_no || '-',
+      row.driver?.name || '-',
+      row.total_till,
+      row.target,
+      row.fuel,
+      row.operation,
+      row.cash_deposited_by_staff,
+      row.amount_paid_to_the_till,
+      row.offload,
+      row.operations_cost,
+      row.net_banked,
+      row.deficit,
+      `${(row.performance * 100).toFixed(0)}%`,
+    ]);
+  });
+  setColumnWidths(transactionsSheet, [12, 12, 15, 12, 12, 10, 12, 15, 16, 10, 15, 12, 10, 12]);
+
+  infoSheet.addRow(['Transaction Details']);
+  infoSheet.addRow(['Period', periodLabel]);
+  infoSheet.addRow(['Total Records', data.length]);
+  infoSheet.addRow(['Generated', new Date().toLocaleString()]);
+  infoSheet.getRow(1).font = { bold: true };
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  triggerDownload(buffer as ArrayBuffer, fileName);
 }

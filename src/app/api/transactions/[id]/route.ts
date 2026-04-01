@@ -6,6 +6,10 @@ import type { Transaction } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
 async function buildSingleTransaction(transactionRow: any): Promise<Transaction | null> {
     if (!transactionRow) {
         return null;
@@ -24,12 +28,13 @@ async function buildSingleTransaction(transactionRow: any): Promise<Transaction 
 }
 
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, context: RouteContext) {
   let connection: PoolConnection | null = null;
   try {
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    const transactionId = params.id;
+    const { id } = await context.params;
+    const transactionId = id;
 
     const {
         date,
@@ -45,7 +50,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const [ambulanceRows] = await connection.query<RowDataPacket[]>('SELECT target FROM ambulances WHERE id = ?', [ambulance_id]);
     if (ambulanceRows.length === 0) {
         await connection.rollback();
-        return NextResponse.json({ message: 'Ambulance not found' }, { status: 404 });
+        return NextResponse.json({ message: 'Vehicle not found' }, { status: 404 });
     }
     const target = ambulanceRows[0].target;
 
@@ -61,7 +66,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const salary = (offload - targetNum) >= 0 ? (offload - targetNum) : 0;
     const operations_cost = operationNum + salary;
     const net_banked = totalTillNum - fuelNum - operationNum - salary;
-    const deficit = targetNum > 0 ? targetNum - net_banked : 0;
+    const deficit = targetNum > 0 ? Math.max(targetNum - net_banked, 0) : 0;
     const performance = targetNum > 0 ? net_banked / targetNum : 0;
     const fuel_revenue_ratio = totalTillNum > 0 ? fuelNum / totalTillNum : 0;
 
@@ -109,12 +114,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: RouteContext) {
   let connection: PoolConnection | null = null;
   try {
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    const transactionId = params.id;
+    const { id } = await context.params;
+    const transactionId = id;
     
     // First, delete from the join table
     await connection.query('DELETE FROM transaction_technicians WHERE transaction_id = ?', [transactionId]);

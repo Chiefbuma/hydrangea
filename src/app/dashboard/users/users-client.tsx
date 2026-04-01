@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { getUsers, createUser, updateUser, deleteUser } from '@/services/api-service';
+import { getCurrentUser, getUsers, createUser, updateUser, deleteUser } from '@/services/api-service';
 
 type UserFormData = {
     name: string;
@@ -72,10 +72,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
   }, [toast]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('loggedInUser');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
+    getCurrentUser().then(setCurrentUser).catch(() => setCurrentUser(null));
     if (!initialUsers) {
       fetchUsers();
     }

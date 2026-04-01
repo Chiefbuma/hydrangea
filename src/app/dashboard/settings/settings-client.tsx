@@ -30,8 +30,8 @@ const viewConfig = {
     component: (props: { data: any[] }) => <DriversClient initialDrivers={props.data as Driver[]} />
   },
   'emergency-technicians': {
-    title: 'Manage Emergency Technicians',
-    description: 'A list of all emergency technicians in your team.',
+    title: 'Manage Assistants',
+    description: 'A list of all assistants in your team.',
     component: (props: { data: any[] }) => <MedicalStaffClient initialMedicalStaff={props.data as EmergencyTechnician[]} />
   }
 };
@@ -80,7 +80,7 @@ export default function SettingsClient() {
                 <SelectContent>
                     <SelectItem value="users">App Users</SelectItem>
                     <SelectItem value="drivers">Drivers</SelectItem>
-                    <SelectItem value="emergency-technicians">Emergency Technicians</SelectItem>
+                    <SelectItem value="emergency-technicians">Assistants</SelectItem>
                 </SelectContent>
             </Select>
          </div>

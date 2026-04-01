@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { updateUser } from '@/services/api-service';
+import { getCurrentUser, updateUser } from '@/services/api-service';
 
 export default function ProfileClient() {
   const [user, setUser] = useState<User | null>(null);
@@ -18,13 +18,17 @@ export default function ProfileClient() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('loggedInUser');
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      setFormData({ name: parsedUser.name, email: parsedUser.email, password: '' });
+    async function loadUser() {
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+        setFormData({ name: currentUser.name, email: currentUser.email, password: '' });
+      } finally {
+        setLoading(false);
+      }
     }
-    setLoading(false);
+
+    loadUser();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +49,6 @@ export default function ProfileClient() {
         const resData = await updateUser(user.id, body);
 
         const updatedUser = resData.user;
-        localStorage.setItem('loggedInUser', JSON.stringify(updatedUser));
         setUser(updatedUser);
         
         toast({

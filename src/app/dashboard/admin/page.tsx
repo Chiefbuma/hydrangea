@@ -1,13 +1,4 @@
-import dynamic from 'next/dynamic';
-import { Loader2 } from 'lucide-react';
-
-const AdminDashboardClient = dynamic(
-  () => import('./admin-dashboard-client'),
-  {
-    ssr: false,
-    loading: () => <div className="flex h-96 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>,
-  }
-);
+import AdminDashboardClient from './admin-dashboard-client';
 
 export default function AdminDashboardPage() {
   return <AdminDashboardClient />;

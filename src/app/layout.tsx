@@ -11,8 +11,8 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Radiant Hospital Ambulance Management',
-  description: 'Ambulance Fleet & Revenue Management',
+  title: 'Hydrangea Fleet Management',
+  description: 'Hydrangea fleet operations for buses and ambulances',
 };
 
 export default function RootLayout({

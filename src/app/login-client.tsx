@@ -24,9 +24,7 @@ export default function LoginClient() {
     setLoading(true);
 
     try {
-      const data = await login({ email, password });
-
-      localStorage.setItem('loggedInUser', JSON.stringify(data));
+      await login({ email, password });
       
       toast({
         title: 'Login Successful',
@@ -34,6 +32,7 @@ export default function LoginClient() {
       });
       
       router.push('/dashboard');
+      router.refresh();
 
     } catch (error) {
       toast({
@@ -54,9 +53,9 @@ export default function LoginClient() {
             </div>
             <Card>
                 <CardHeader>
-                    <CardTitle>Welcome Back</CardTitle>
+                    <CardTitle>Welcome to Hydrangea</CardTitle>
                     <CardDescription>
-                        Enter your credentials to access your dashboard.
+                        Sign in to manage your bus and ambulance fleet.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -76,10 +75,11 @@ export default function LoginClient() {
                             <div className="grid gap-2">
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Password</Label>
-                                    <Link href="/forgot-password" passHref legacyBehavior>
-                                        <a className="ml-auto inline-block text-sm underline">
-                                            Forgot your password?
-                                        </a>
+                                    <Link
+                                      href="/forgot-password"
+                                      className="ml-auto inline-block text-sm underline"
+                                    >
+                                      Forgot your password?
                                     </Link>
                                 </div>
                                 <Input

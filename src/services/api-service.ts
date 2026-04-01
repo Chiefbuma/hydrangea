@@ -28,6 +28,27 @@ export async function login(credentials: {email: string, password: string}): Pro
     }
 }
 
+export async function getCurrentUser(): Promise<User> {
+    try {
+        const res = await fetch(`/api/auth/me`, { cache: 'no-store' });
+        if (!res.ok) throw await getErrorFromResponse(res);
+        return res.json();
+    } catch (error) {
+        console.error('[GET_CURRENT_USER_ERROR]', error);
+        throw error;
+    }
+}
+
+export async function logout(): Promise<void> {
+    try {
+        const res = await fetch(`/api/auth/logout`, { method: 'POST' });
+        if (!res.ok) throw await getErrorFromResponse(res);
+    } catch (error) {
+        console.error('[LOGOUT_ERROR]', error);
+        throw error;
+    }
+}
+
 export async function forgotPassword(data: {email: string}): Promise<{message: string}> {
     try {
         const res = await fetch(`/api/auth/forgot-password`, {

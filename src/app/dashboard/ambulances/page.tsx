@@ -1,13 +1,4 @@
-import dynamic from 'next/dynamic';
-import { Loader2 } from 'lucide-react';
-
-const AmbulancesClient = dynamic(
-  () => import('./ambulances-client'),
-  {
-    ssr: false,
-    loading: () => <div className="flex h-96 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>,
-  }
-);
+import AmbulancesClient from './ambulances-client';
 
 export default function AmbulancesPage() {
   return <AmbulancesClient />;

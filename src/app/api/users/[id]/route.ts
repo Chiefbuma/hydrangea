@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import pool from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { createSessionToken, SESSION_COOKIE_NAME, sessionCookieOptions, verifySessionToken } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +48,23 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'User not found after update' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: 'User updated successfully', user: rows[0] });
+    const updatedUser = rows[0];
+    const response = NextResponse.json({ message: 'User updated successfully', user: updatedUser });
+    const cookieStore = await cookies();
+    const currentToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    const session = await verifySessionToken(currentToken);
+
+    if (session && Number(session.id) === Number(params.id)) {
+      const freshToken = await createSessionToken({
+        id: Number(updatedUser.id),
+        name: String(updatedUser.name),
+        email: String(updatedUser.email),
+        role: updatedUser.role as 'admin' | 'staff',
+      });
+      response.cookies.set(SESSION_COOKIE_NAME, freshToken, sessionCookieOptions());
+    }
+
+    return response;
   } catch (error) {
     console.error("Caught error in PUT /api/users/[id]:", error);
     if ((error as any).code === 'ER_DUP_ENTRY') {
@@ -58,6 +76,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    const cookieStore = await cookies();
+    const currentToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    const session = await verifySessionToken(currentToken);
+
+    if (session && Number(session.id) === Number(params.id)) {
+      return NextResponse.json({ message: 'You cannot delete your own account while signed in.' }, { status: 400 });
+    }
+
     await pool.execute('DELETE FROM users WHERE id = ?', [params.id]);
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error) {

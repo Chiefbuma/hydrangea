@@ -125,6 +125,7 @@ export default function AdminDashboardClient() {
 
                 return {
                     ambulanceId,
+                    vehicle_type: ambulance?.vehicle_type ?? 'ambulance',
                     reg_no: ambulance?.reg_no ?? `Unknown (${ambulanceId})`,
                     total_target: totals.total_target,
                     total_net_banked: totals.total_net_banked,
@@ -200,7 +201,7 @@ export default function AdminDashboardClient() {
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Dashboard</h1>
-                    <p className="text-muted-foreground">High-level overview of fleet performance.</p>
+                    <p className="text-muted-foreground">High-level overview of Hydrangea fleet performance.</p>
                 </div>
                 <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-end sm:gap-4">
                     <div className="grid w-full gap-2 sm:w-auto">
@@ -356,7 +357,7 @@ export default function AdminDashboardClient() {
                     <CardHeader>
                         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                             <div>
-                                <CardTitle>Ambulance Performance Analysis</CardTitle>
+                                <CardTitle>Fleet Performance Analysis</CardTitle>
                                 <CardDescription>
                                     Period: {format(dateRange.from, "MMMM d, yyyy")} - {format(dateRange.to, "MMMM d, yyyy")}
                                 </CardDescription>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import type { Ambulance } from '@/lib/types';
+import type { Ambulance, VehicleType } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getColumns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
@@ -38,11 +38,20 @@ import {
 import { getAmbulances, createAmbulance, updateAmbulance, deleteAmbulance } from '@/services/api-service';
 import { Card, CardContent } from '@/components/ui/card';
 
+const DEFAULT_FORM_DATA = {
+  vehicle_type: 'ambulance' as VehicleType,
+  reg_no: '',
+  fuel_cost: 0,
+  operation_cost: 0,
+  target: 0,
+  status: 'active' as 'active' | 'inactive',
+};
+
 export default function AmbulancesClient() {
   const [ambulances, setAmbulances] = useState<Ambulance[] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAmbulance, setEditingAmbulance] = useState<Ambulance | null>(null);
-  const [formData, setFormData] = useState({ reg_no: '', fuel_cost: 0, operation_cost: 0, target: 0, status: 'active' as 'active' | 'inactive' });
+  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -61,7 +70,7 @@ export default function AmbulancesClient() {
         toast({
             variant: 'destructive',
             title: "Error",
-            description: "Could not load ambulances.",
+            description: "Could not load fleet vehicles.",
         });
     }
   }, [toast]);
@@ -75,7 +84,7 @@ export default function AmbulancesClient() {
     if (ambulance) {
       setFormData(ambulance);
     } else {
-      setFormData({ reg_no: '', fuel_cost: 0, operation_cost: 0, target: 0, status: 'active' });
+      setFormData(DEFAULT_FORM_DATA);
     }
     setIsModalOpen(true);
   }, []);
@@ -83,7 +92,7 @@ export default function AmbulancesClient() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingAmbulance(null);
-    setFormData({ reg_no: '', fuel_cost: 0, operation_cost: 0, target: 0, status: 'active' });
+    setFormData(DEFAULT_FORM_DATA);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +110,7 @@ export default function AmbulancesClient() {
         
         toast({
             title: "Success",
-            description: `Ambulance ${editingAmbulance ? 'updated' : 'created'} successfully.`,
+            description: `Vehicle ${editingAmbulance ? 'updated' : 'created'} successfully.`,
         });
 
         handleCloseModal();
@@ -133,7 +142,7 @@ export default function AmbulancesClient() {
 
         toast({
             title: "Success",
-            description: "Ambulance deleted successfully.",
+            description: "Vehicle deleted successfully.",
         });
 
      } catch(error) {
@@ -162,7 +171,7 @@ export default function AmbulancesClient() {
 
         toast({
             title: "Success",
-            description: `${ids.length} ambulance(s) deleted successfully.`,
+            description: `${ids.length} vehicle(s) deleted successfully.`,
         });
 
     } catch (error) {
@@ -185,7 +194,7 @@ export default function AmbulancesClient() {
   const CustomToolbarActions = (
     <Button onClick={() => handleOpenModal(null)}>
       <PlusCircle className="mr-2 h-4 w-4" />
-      Add Ambulance
+      Add Vehicle
     </Button>
   );
 
@@ -205,7 +214,7 @@ export default function AmbulancesClient() {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the selected ambulances.
+                        This action cannot be undone. This will permanently delete the selected vehicles.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -247,10 +256,10 @@ export default function AmbulancesClient() {
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                 <h1 className="text-3xl font-bold font-headline tracking-tight">
-                    Manage Ambulances
+                    Manage Fleet
                 </h1>
                 <p className="text-muted-foreground">
-                    A list of all ambulances in your fleet.
+                    A list of all buses and ambulances in your fleet.
                 </p>
                 </div>
             </div>
@@ -260,10 +269,25 @@ export default function AmbulancesClient() {
       <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
         <DialogContent className="sm:max-w-[425px]">
            <DialogHeader>
-            <DialogTitle>{editingAmbulance ? 'Edit Ambulance' : 'Add New Ambulance'}</DialogTitle>
+            <DialogTitle>{editingAmbulance ? 'Edit Vehicle' : 'Add New Vehicle'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="vehicle_type">Vehicle Type</Label>
+                <Select
+                  value={formData.vehicle_type}
+                  onValueChange={(value) => setFormData({ ...formData, vehicle_type: value as VehicleType })}
+                >
+                  <SelectTrigger id="vehicle_type">
+                    <SelectValue placeholder="Select vehicle type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ambulance">Ambulance</SelectItem>
+                    <SelectItem value="bus">Bus</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="reg_no">Registration No.</Label>
                 <Input
@@ -325,7 +349,7 @@ export default function AmbulancesClient() {
                 </DialogClose>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {editingAmbulance ? 'Save Changes' : 'Create Ambulance'}
+                  {editingAmbulance ? 'Save Changes' : 'Create Vehicle'}
                 </Button>
             </DialogFooter>
           </form>
@@ -337,7 +361,7 @@ export default function AmbulancesClient() {
                 <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the ambulance.
+                    This action cannot be undone. This will permanently delete the vehicle.
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

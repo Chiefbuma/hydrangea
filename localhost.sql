@@ -29,6 +29,7 @@ CREATE TABLE `users` (
 --
 CREATE TABLE `ambulances` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `vehicle_type` enum('bus','ambulance') NOT NULL DEFAULT 'ambulance',
   `reg_no` varchar(255) NOT NULL,
   `fuel_cost` decimal(10,2) NOT NULL DEFAULT '0.00',
   `operation_cost` decimal(10,2) NOT NULL DEFAULT '0.00',
@@ -136,7 +137,7 @@ UNLOCK TABLES;
 -- Dumping data for table `ambulances`
 --
 LOCK TABLES `ambulances` WRITE;
-INSERT INTO `ambulances` VALUES (1,'KCD 123A',5000.00,2000.00,15000.00,'active','2024-05-12 19:07:34','2024-05-12 19:07:34'),(2,'KDE 456B',5500.00,2200.00,18000.00,'active','2024-05-12 19:07:34','2024-05-12 19:07:34'),(3,'KCF 789C',4800.00,1900.00,14000.00,'inactive','2024-05-12 19:07:34','2024-05-12 19:07:34');
+INSERT INTO `ambulances` VALUES (1,'ambulance','KCD 123A',5000.00,2000.00,15000.00,'active','2024-05-12 19:07:34','2024-05-12 19:07:34'),(2,'bus','KDE 456B',5500.00,2200.00,18000.00,'active','2024-05-12 19:07:34','2024-05-12 19:07:34'),(3,'ambulance','KCF 789C',4800.00,1900.00,14000.00,'inactive','2024-05-12 19:07:34','2024-05-12 19:07:34');
 UNLOCK TABLES;
 
 --

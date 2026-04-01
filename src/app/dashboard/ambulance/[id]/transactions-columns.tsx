@@ -34,7 +34,7 @@ interface TransactionColumnsProps {
 export const getColumns = ({ isAdmin, onEdit, onDelete }: TransactionColumnsProps): ColumnDef<Transaction>[] => [
   {
     accessorKey: "ambulance",
-    header: "Ambulance",
+    header: "Vehicle",
     cell: ({ row }) => <div className="font-medium">{row.original.ambulance?.reg_no}</div>
   },
   {

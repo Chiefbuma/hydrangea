@@ -17,7 +17,7 @@ async function buildTransactions(transactionRows: any[]): Promise<Transaction[]>
   const driverIds = Array.from(new Set(transactionRows.map(t => t.driver_id).filter(Boolean)));
 
   const [ambulances] = ambulanceIds.length
-    ? await pool.query<RowDataPacket[]>('SELECT id, reg_no, fuel_cost, operation_cost, target, status FROM ambulances WHERE id IN (?)', [ambulanceIds])
+    ? await pool.query<RowDataPacket[]>('SELECT id, vehicle_type, reg_no, fuel_cost, operation_cost, target, status FROM ambulances WHERE id IN (?)', [ambulanceIds])
     : [[]];
 
   const [drivers] = driverIds.length
@@ -46,7 +46,7 @@ async function buildTransactions(transactionRows: any[]): Promise<Transaction[]>
     return {
       id: t.id,
       date: new Date(t.date).toISOString(),
-      ambulance: ambulance || { id: t.ambulance_id, reg_no: 'Unknown', fuel_cost: 0, operation_cost: 0, target: 0, status: 'inactive' as const },
+      ambulance: ambulance || { id: t.ambulance_id, vehicle_type: 'ambulance' as const, reg_no: 'Unknown', fuel_cost: 0, operation_cost: 0, target: 0, status: 'inactive' as const },
       driver: driver || { id: t.driver_id, name: 'Unknown' },
       emergency_technicians: transactionTechniciansMap.get(t.id) || [],
       total_till: Number(t.total_till || 0),
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
     const [ambulanceRows] = await connection.query<RowDataPacket[]>('SELECT target FROM ambulances WHERE id = ?', [ambulance_id]);
     if (ambulanceRows.length === 0) {
         await connection.rollback();
-        return NextResponse.json({ message: 'Ambulance not found' }, { status: 404 });
+        return NextResponse.json({ message: 'Vehicle not found' }, { status: 404 });
     }
     const target = ambulanceRows[0].target;
 
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
     const salary = (offload - targetNum) >= 0 ? (offload - targetNum) : 0;
     const operations_cost = operationNum + salary;
     const net_banked = totalTillNum - fuelNum - operationNum - salary;
-    const deficit = targetNum > 0 ? targetNum - net_banked : 0;
+    const deficit = targetNum > 0 ? Math.max(targetNum - net_banked, 0) : 0;
     const performance = targetNum > 0 ? net_banked / targetNum : 0;
     const fuel_revenue_ratio = totalTillNum > 0 ? fuelNum / totalTillNum : 0;
 

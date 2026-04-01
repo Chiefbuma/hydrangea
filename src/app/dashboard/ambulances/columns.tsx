@@ -14,6 +14,26 @@ interface AmbulancesColumnsProps {
 
 export const getColumns = ({ onEdit, onDelete }: AmbulancesColumnsProps): ColumnDef<Ambulance>[] => [
   {
+    accessorKey: "vehicle_type",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="px-0 sm:px-2 h-8"
+        >
+          Vehicle Type
+          <ArrowUpDown className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => (
+      <Badge variant="outline" className="capitalize text-xs">
+        {row.getValue("vehicle_type")}
+      </Badge>
+    ),
+  },
+  {
     accessorKey: "reg_no",
     header: ({ column }) => {
       return (

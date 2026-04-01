@@ -1,12 +1,22 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { SESSION_COOKIE_NAME, verifySessionToken } from '@/lib/session';
 
-// This is a placeholder middleware that does nothing.
-// It is required to prevent a build error when a middleware.ts file exists but is empty.
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  if (!request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.next();
+  }
+
+  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  const session = await verifySessionToken(token);
+
+  if (!session) {
+    const loginUrl = new URL('/', request.url);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return NextResponse.next();
 }
 
-// The matcher is set to a path that will never be matched.
 export const config = {
-  matcher: '/__this-path-will-never-be-used__/',
+  matcher: ['/dashboard/:path*'],
 };

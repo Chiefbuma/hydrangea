@@ -92,7 +92,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
         await fetchTechnicians();
         toast({
             title: "Success",
-            description: `Emergency Technician ${editingStaff ? 'updated' : 'created'} successfully.`,
+            description: `Assistant ${editingStaff ? 'updated' : 'created'} successfully.`,
         });
 
         handleCloseModal();
@@ -119,7 +119,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     try {
         await deleteTechnician(staffToDelete.id);
         await fetchTechnicians();
-        toast({ title: "Success", description: "Emergency Technician deleted successfully." });
+        toast({ title: "Success", description: "Assistant deleted successfully." });
     } catch (error) {
         toast({ variant: 'destructive', title: "Error", description: (error as Error).message });
     } finally {
@@ -136,7 +136,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     try {
         await Promise.all(ids.map(id => deleteTechnician(id)));
         await fetchTechnicians();
-        toast({ title: "Success", description: `${ids.length} technician(s) deleted successfully.` });
+        toast({ title: "Success", description: `${ids.length} assistant(s) deleted successfully.` });
     } catch (error) {
         toast({ variant: 'destructive', title: 'Bulk Delete Error', description: (error as Error).message });
     } finally {
@@ -153,7 +153,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
   const CustomToolbarActions = (
     <Button onClick={() => handleOpenModal(null)}>
       <PlusCircle className="mr-2 h-4 w-4" />
-      Add Technician
+      Add Assistant
     </Button>
   );
 
@@ -173,7 +173,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the selected technicians.
+                        This action cannot be undone. This will permanently delete the selected assistants.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -205,7 +205,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
       <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
         <DialogContent className="sm:max-w-[425px]">
            <DialogHeader>
-            <DialogTitle>{editingStaff ? 'Edit Technician' : 'Add New Technician'}</DialogTitle>
+            <DialogTitle>{editingStaff ? 'Edit Assistant' : 'Add New Assistant'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
@@ -225,7 +225,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
                 </DialogClose>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {editingStaff ? 'Save Changes' : 'Create Technician'}
+                  {editingStaff ? 'Save Changes' : 'Create Assistant'}
                 </Button>
             </DialogFooter>
           </form>
@@ -236,7 +236,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
                 <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                   This action cannot be undone. This will permanently delete the emergency technician.
+                   This action cannot be undone. This will permanently delete the assistant.
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

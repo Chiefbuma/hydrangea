@@ -9,7 +9,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const { name } = await req.json();
     await pool.execute('UPDATE emergency_technicians SET name = ? WHERE id = ?', [name, params.id]);
     const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name FROM emergency_technicians WHERE id = ?', [params.id]);
-    return NextResponse.json({ message: 'Technician updated successfully', technician: rows[0] });
+    return NextResponse.json({ message: 'Assistant updated successfully', technician: rows[0] });
   } catch (error) {
     console.error("Caught error in PUT /api/emergency-technicians/[id]:", error);
     return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
