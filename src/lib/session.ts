@@ -31,7 +31,21 @@ function base64UrlToBytes(value: string) {
 }
 
 async function getSigningKey() {
-  const secret = process.env.SESSION_SECRET || 'radiant-local-dev-secret';
+  const secret = process.env.SESSION_SECRET;
+
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SESSION_SECRET must be set in production.');
+    }
+
+    return crypto.subtle.importKey(
+      'raw',
+      encoder.encode('radiant-local-dev-secret'),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign', 'verify']
+    );
+  }
 
   return crypto.subtle.importKey(
     'raw',

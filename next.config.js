@@ -28,6 +28,10 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
 
+  experimental: {
+    webpackBuildWorker: false,
+  },
+
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

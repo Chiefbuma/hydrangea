@@ -16,8 +16,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['var(--font-pt-sans)', 'sans-serif'],
-        headline: ['var(--font-pt-sans)', 'sans-serif'],
+        body: ['"Segoe UI"', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+        headline: ['"Segoe UI"', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
