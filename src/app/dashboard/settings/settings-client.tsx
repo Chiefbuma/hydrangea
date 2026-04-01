@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { User, Driver, EmergencyTechnician } from '@/lib/types';
-import { getUsers, getDrivers, getEmergencyTechnicians } from '@/services/api-service';
+import type { User, Driver, Assistant } from '@/lib/types';
+import { getUsers, getDrivers, getAssistants } from '@/services/api-service';
 import UsersClient from '@/app/dashboard/users/users-client';
 import DriversClient from '@/app/dashboard/drivers/drivers-client';
-import MedicalStaffClient from '@/app/dashboard/medical-staff/medical-staff-client';
+import AssistantsClient from '@/app/dashboard/assistants/assistants-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from 'lucide-react';
 
-type View = 'users' | 'drivers' | 'emergency-technicians';
+type View = 'users' | 'drivers' | 'assistants';
 
 const viewConfig = {
   users: {
@@ -29,10 +29,10 @@ const viewConfig = {
     description: 'A list of all drivers in your fleet.',
     component: (props: { data: any[] }) => <DriversClient initialDrivers={props.data as Driver[]} />
   },
-  'emergency-technicians': {
+  assistants: {
     title: 'Manage Assistants',
     description: 'A list of all assistants in your team.',
-    component: (props: { data: any[] }) => <MedicalStaffClient initialMedicalStaff={props.data as EmergencyTechnician[]} />
+    component: (props: { data: any[] }) => <AssistantsClient initialAssistants={props.data as Assistant[]} />
   }
 };
 
@@ -50,7 +50,7 @@ export default function SettingsClient() {
       } else if (selectedView === 'drivers') {
         loadedData = await getDrivers();
       } else {
-        loadedData = await getEmergencyTechnicians();
+        loadedData = await getAssistants();
       }
       setData(loadedData);
       setLoading(false);
@@ -80,7 +80,7 @@ export default function SettingsClient() {
                 <SelectContent>
                     <SelectItem value="users">App Users</SelectItem>
                     <SelectItem value="drivers">Drivers</SelectItem>
-                    <SelectItem value="emergency-technicians">Assistants</SelectItem>
+                    <SelectItem value="assistants">Assistants</SelectItem>
                 </SelectContent>
             </Select>
          </div>

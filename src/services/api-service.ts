@@ -1,4 +1,4 @@
-import type { Transaction, Ambulance, Driver, EmergencyTechnician, User } from '@/lib/types';
+import type { Transaction, Ambulance, Driver, Assistant, User } from '@/lib/types';
 
 // Generic function to handle API responses and extract error messages
 async function getErrorFromResponse(response: Response): Promise<Error> {
@@ -122,13 +122,13 @@ export async function getDrivers(): Promise<Driver[]> {
   }
 }
 
-export async function getEmergencyTechnicians(): Promise<EmergencyTechnician[]> {
+export async function getAssistants(): Promise<Assistant[]> {
   try {
-    const res = await fetch(`/api/emergency-technicians`, { cache: 'no-store' });
+    const res = await fetch(`/api/assistants`, { cache: 'no-store' });
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
   } catch (error) {
-    console.error('[GET_EMERGENCY_TECHNICIANS_ERROR]', error);
+    console.error('[GET_ASSISTANTS_ERROR]', error);
     throw error;
   }
 }
@@ -274,11 +274,11 @@ export async function deleteDriver(id: number): Promise<void> {
 }
 
 
-// --- Technician Mutations ---
+// --- Assistant Mutations ---
 
-export async function createTechnician(data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
+export async function createAssistant(data: {name: string}): Promise<{message: string, assistant: Assistant}> {
     try {
-        const res = await fetch(`/api/emergency-technicians`, {
+        const res = await fetch(`/api/assistants`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -286,14 +286,14 @@ export async function createTechnician(data: {name: string}): Promise<{message: 
         if (!res.ok) throw await getErrorFromResponse(res);
         return res.json();
     } catch (error) {
-        console.error('[CREATE_TECHNICIAN_ERROR]', error);
+        console.error('[CREATE_ASSISTANT_ERROR]', error);
         throw error;
     }
 }
 
-export async function updateTechnician(id: number, data: {name: string}): Promise<{message: string, technician: EmergencyTechnician}> {
+export async function updateAssistant(id: number, data: {name: string}): Promise<{message: string, assistant: Assistant}> {
     try {
-        const res = await fetch(`/api/emergency-technicians/${id}`, {
+        const res = await fetch(`/api/assistants/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -301,17 +301,17 @@ export async function updateTechnician(id: number, data: {name: string}): Promis
         if (!res.ok) throw await getErrorFromResponse(res);
         return res.json();
     } catch (error) {
-        console.error(`[UPDATE_TECHNICIAN_ERROR] ID: ${id}`, error);
+        console.error(`[UPDATE_ASSISTANT_ERROR] ID: ${id}`, error);
         throw error;
     }
 }
 
-export async function deleteTechnician(id: number): Promise<void> {
+export async function deleteAssistant(id: number): Promise<void> {
     try {
-        const res = await fetch(`/api/emergency-technicians/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/assistants/${id}`, { method: 'DELETE' });
         if (!res.ok) throw await getErrorFromResponse(res);
     } catch (error) {
-        console.error(`[DELETE_TECHNICIAN_ERROR] ID: ${id}`, error);
+        console.error(`[DELETE_ASSISTANT_ERROR] ID: ${id}`, error);
         throw error;
     }
 }

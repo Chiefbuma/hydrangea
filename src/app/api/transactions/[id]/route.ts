@@ -17,13 +17,13 @@ async function buildSingleTransaction(transactionRow: any): Promise<Transaction 
     
     const [ambulanceRows] = await pool.query<RowDataPacket[]>('SELECT * FROM ambulances WHERE id = ?', [transactionRow.ambulance_id]);
     const [driverRows] = await pool.query<RowDataPacket[]>('SELECT * FROM drivers WHERE id = ?', [transactionRow.driver_id]);
-    const [technicianLinks] = await pool.query<RowDataPacket[]>('SELECT et.* FROM transaction_technicians tt JOIN emergency_technicians et ON et.id = tt.technician_id WHERE tt.transaction_id = ?', [transactionRow.id]);
+    const [assistantLinks] = await pool.query<RowDataPacket[]>('SELECT a.* FROM transaction_assistants ta JOIN assistants a ON a.id = ta.assistant_id WHERE ta.transaction_id = ?', [transactionRow.id]);
 
     return {
         ...transactionRow,
         ambulance: ambulanceRows[0],
         driver: driverRows[0],
-        emergency_technicians: technicianLinks,
+        assistants: assistantLinks,
     };
 }
 
@@ -40,7 +40,7 @@ export async function PUT(req: Request, context: RouteContext) {
         date,
         ambulance_id,
         driver_id,
-        emergency_technician_ids,
+        assistant_ids,
         total_till,
         fuel,
         operation,
@@ -91,11 +91,11 @@ export async function PUT(req: Request, context: RouteContext) {
 
     await connection.query('UPDATE transactions SET ? WHERE id = ?', [transactionData, transactionId]);
 
-    // Update technicians
-    await connection.query('DELETE FROM transaction_technicians WHERE transaction_id = ?', [transactionId]);
-    if (emergency_technician_ids && emergency_technician_ids.length > 0) {
-        const technicianLinks = emergency_technician_ids.map((techId: number) => [transactionId, techId]);
-        await connection.query('INSERT INTO transaction_technicians (transaction_id, technician_id) VALUES ?', [technicianLinks]);
+    // Update assistants
+    await connection.query('DELETE FROM transaction_assistants WHERE transaction_id = ?', [transactionId]);
+    if (assistant_ids && assistant_ids.length > 0) {
+        const assistantLinks = assistant_ids.map((assistantId: number) => [transactionId, assistantId]);
+        await connection.query('INSERT INTO transaction_assistants (transaction_id, assistant_id) VALUES ?', [assistantLinks]);
     }
 
     await connection.commit();
@@ -123,7 +123,7 @@ export async function DELETE(req: Request, context: RouteContext) {
     const transactionId = id;
     
     // First, delete from the join table
-    await connection.query('DELETE FROM transaction_technicians WHERE transaction_id = ?', [transactionId]);
+    await connection.query('DELETE FROM transaction_assistants WHERE transaction_id = ?', [transactionId]);
     
     // Then, delete from the transactions table
     await connection.query('DELETE FROM transactions WHERE id = ?', [transactionId]);

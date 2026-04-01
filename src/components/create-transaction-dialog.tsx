@@ -2,11 +2,11 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { Ambulance, Driver, EmergencyTechnician } from '@/lib/types';
+import type { Ambulance, Driver, Assistant } from '@/lib/types';
 import {
   getAmbulances,
   getDrivers,
-  getEmergencyTechnicians,
+  getAssistants,
   createTransaction,
 } from '@/services/api-service';
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,7 @@ type TransactionFormData = {
   ambulance_id: string;
   date: string;
   driver_id: string;
-  emergency_technician_ids: number[];
+  assistant_ids: number[];
   total_till: string;
   fuel: string;
   operation: string;
@@ -65,7 +65,7 @@ const getInitialFormData = (): TransactionFormData => ({
   ambulance_id: '',
   date: new Date().toISOString().split('T')[0],
   driver_id: '',
-  emergency_technician_ids: [],
+  assistant_ids: [],
   total_till: '',
   fuel: '',
   operation: '',
@@ -89,7 +89,7 @@ export default function CreateTransactionDialog({
 
   const [ambulances, setAmbulances] = useState<Ambulance[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [emergencyTechnicians, setEmergencyTechnicians] = useState<EmergencyTechnician[]>([]);
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<TransactionFormData>(getInitialFormData);
@@ -125,15 +125,15 @@ export default function CreateTransactionDialog({
   const loadReferenceData = useCallback(async () => {
     try {
       setIsLoadingOptions(true);
-      const [vehiclesData, driversData, techniciansData] = await Promise.all([
+      const [vehiclesData, driversData, assistantsData] = await Promise.all([
         getAmbulances(),
         getDrivers(),
-        getEmergencyTechnicians(),
+        getAssistants(),
       ]);
 
       setAmbulances(vehiclesData);
       setDrivers(driversData);
-      setEmergencyTechnicians(techniciansData);
+      setAssistants(assistantsData);
       setFormData(buildFormData(vehiclesData));
     } catch (error) {
       toast({
@@ -177,12 +177,12 @@ export default function CreateTransactionDialog({
     setResolvedOpen(nextOpen);
   };
 
-  const handleTechnicianSelection = (technicianId: number) => {
+  const handleAssistantSelection = (assistantId: number) => {
     setFormData((current) => ({
       ...current,
-      emergency_technician_ids: current.emergency_technician_ids.includes(technicianId)
-        ? current.emergency_technician_ids.filter((id) => id !== technicianId)
-        : [...current.emergency_technician_ids, technicianId],
+      assistant_ids: current.assistant_ids.includes(assistantId)
+        ? current.assistant_ids.filter((id) => id !== assistantId)
+        : [...current.assistant_ids, assistantId],
     }));
   };
 
@@ -309,8 +309,8 @@ export default function CreateTransactionDialog({
                     <Button variant="outline" className="w-full justify-start font-normal">
                       <Users className="mr-2 h-4 w-4" />
                       <span>
-                        {formData.emergency_technician_ids.length > 0
-                          ? `${formData.emergency_technician_ids.length} selected`
+                        {formData.assistant_ids.length > 0
+                          ? `${formData.assistant_ids.length} selected`
                           : 'Select Assistants'}
                       </span>
                       <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
@@ -319,14 +319,14 @@ export default function CreateTransactionDialog({
                   <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]" align="start">
                     <DropdownMenuLabel>Select Assistants</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {emergencyTechnicians.map((technician) => (
+                    {assistants.map((assistant) => (
                       <DropdownMenuCheckboxItem
-                        key={technician.id}
-                        checked={formData.emergency_technician_ids.includes(technician.id)}
-                        onCheckedChange={() => handleTechnicianSelection(technician.id)}
+                        key={assistant.id}
+                        checked={formData.assistant_ids.includes(assistant.id)}
+                        onCheckedChange={() => handleAssistantSelection(assistant.id)}
                         onSelect={(event) => event.preventDefault()}
                       >
-                        {technician.name}
+                        {assistant.name}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </DropdownMenuContent>

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import type { Ambulance, Transaction, Driver, EmergencyTechnician } from '@/lib/types';
-import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getEmergencyTechnicians, updateTransaction, deleteTransaction } from '@/services/api-service';
+import type { Ambulance, Transaction, Driver, Assistant } from '@/lib/types';
+import { getAmbulanceById, getTransactionsByAmbulanceId, getDrivers, getAssistants, updateTransaction, deleteTransaction } from '@/services/api-service';
 import {
   Card,
   CardContent,
@@ -112,7 +112,7 @@ export default function AmbulanceDetailsClient() {
   const [error, setError] = useState<string | null>(null);
   
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [emergencyTechnicians, setEmergencyTechnicians] = useState<EmergencyTechnician[]>([]);
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
   
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -126,7 +126,7 @@ export default function AmbulanceDetailsClient() {
   const [transactionFormData, setTransactionFormData] = useState({
       date: new Date().toISOString().split('T')[0],
       driver_id: '',
-      emergency_technician_ids: [] as number[],
+      assistant_ids: [] as number[],
       total_till: '',
       fuel: '',
       operation: '',
@@ -141,16 +141,16 @@ export default function AmbulanceDetailsClient() {
     }
     try {
       setLoading(true);
-      const [ambulanceData, transactionsData, driversData, techniciansData] = await Promise.all([
+      const [ambulanceData, transactionsData, driversData, assistantsData] = await Promise.all([
         getAmbulanceById(ambulanceId),
         getTransactionsByAmbulanceId(ambulanceId),
         getDrivers(),
-        getEmergencyTechnicians(),
+        getAssistants(),
       ]);
       setAmbulance(ambulanceData);
       setTransactions(transactionsData);
       setDrivers(driversData);
-      setEmergencyTechnicians(techniciansData);
+      setAssistants(assistantsData);
       
       setTransactionFormData(prev => ({
           ...prev,
@@ -186,12 +186,12 @@ export default function AmbulanceDetailsClient() {
   }, [ambulanceId, fetchPageData]);
 
 
-  const handleTechnicianSelection = (technicianId: number) => {
+  const handleAssistantSelection = (assistantId: number) => {
     setTransactionFormData(prev => {
-        const newIds = prev.emergency_technician_ids.includes(technicianId)
-            ? prev.emergency_technician_ids.filter(id => id !== technicianId)
-            : [...prev.emergency_technician_ids, technicianId];
-        return {...prev, emergency_technician_ids: newIds };
+        const newIds = prev.assistant_ids.includes(assistantId)
+            ? prev.assistant_ids.filter(id => id !== assistantId)
+            : [...prev.assistant_ids, assistantId];
+        return {...prev, assistant_ids: newIds };
     })
   };
 
@@ -226,7 +226,7 @@ export default function AmbulanceDetailsClient() {
     setTransactionFormData({
       date: new Date(transaction.date).toISOString().split('T')[0],
       driver_id: String(transaction.driver.id),
-      emergency_technician_ids: transaction.emergency_technicians?.map(t => t.id) || [],
+      assistant_ids: transaction.assistants?.map(t => t.id) || [],
       total_till: String(transaction.total_till),
       fuel: String(transaction.fuel),
       operation: String(transaction.operation),
@@ -333,21 +333,21 @@ export default function AmbulanceDetailsClient() {
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-full justify-start font-normal">
                             <Users className="mr-2 h-4 w-4" />
-                            <span>{transactionFormData.emergency_technician_ids.length > 0 ? `${transactionFormData.emergency_technician_ids.length} selected` : 'Select Assistants'}</span>
+                            <span>{transactionFormData.assistant_ids.length > 0 ? `${transactionFormData.assistant_ids.length} selected` : 'Select Assistants'}</span>
                             <ChevronDown className="ml-auto h-4 w-4 opacity-50"/>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]" align="start">
                          <DropdownMenuLabel>Select Assistants</DropdownMenuLabel>
                          <DropdownMenuSeparator />
-                        {emergencyTechnicians.map(tech => (
+                        {assistants.map(assistant => (
                             <DropdownMenuCheckboxItem
-                              key={tech.id}
-                              checked={transactionFormData.emergency_technician_ids.includes(tech.id)}
-                              onCheckedChange={() => handleTechnicianSelection(tech.id)}
+                              key={assistant.id}
+                              checked={transactionFormData.assistant_ids.includes(assistant.id)}
+                              onCheckedChange={() => handleAssistantSelection(assistant.id)}
                               onSelect={(e) => e.preventDefault()}
                             >
-                                {tech.name}
+                                {assistant.name}
                             </DropdownMenuCheckboxItem>
                         ))}
                     </DropdownMenuContent>

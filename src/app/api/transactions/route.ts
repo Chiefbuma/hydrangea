@@ -24,20 +24,20 @@ async function buildTransactions(transactionRows: any[]): Promise<Transaction[]>
     ? await pool.query<RowDataPacket[]>('SELECT id, name FROM drivers WHERE id IN (?)', [driverIds])
     : [[]];
 
-  const [technicianRows] = await pool.query<RowDataPacket[]>(
-    'SELECT tt.transaction_id, et.id, et.name FROM transaction_technicians tt JOIN emergency_technicians et ON et.id = tt.technician_id WHERE tt.transaction_id IN (?)',
+  const [assistantRows] = await pool.query<RowDataPacket[]>(
+    'SELECT ta.transaction_id, a.id, a.name FROM transaction_assistants ta JOIN assistants a ON a.id = ta.assistant_id WHERE ta.transaction_id IN (?)',
     [transactionIds]
   );
 
   const ambulanceMap = new Map((ambulances as any[]).map(a => [String(a.id), a]));
   const driverMap = new Map((drivers as any[]).map(d => [String(d.id), d]));
   
-  const transactionTechniciansMap = new Map<number, any[]>();
-  technicianRows.forEach(row => {
+  const transactionAssistantsMap = new Map<number, any[]>();
+  assistantRows.forEach(row => {
     const txId = row.transaction_id;
-    const tech = { id: row.id, name: row.name };
-    if (!transactionTechniciansMap.has(txId)) transactionTechniciansMap.set(txId, []);
-    transactionTechniciansMap.get(txId)!.push(tech);
+    const assistant = { id: row.id, name: row.name };
+    if (!transactionAssistantsMap.has(txId)) transactionAssistantsMap.set(txId, []);
+    transactionAssistantsMap.get(txId)!.push(assistant);
   });
 
   return transactionRows.map(t => {
@@ -48,7 +48,7 @@ async function buildTransactions(transactionRows: any[]): Promise<Transaction[]>
       date: new Date(t.date).toISOString(),
       ambulance: ambulance || { id: t.ambulance_id, vehicle_type: 'ambulance' as const, reg_no: 'Unknown', fuel_cost: 0, operation_cost: 0, target: 0, status: 'inactive' as const },
       driver: driver || { id: t.driver_id, name: 'Unknown' },
-      emergency_technicians: transactionTechniciansMap.get(t.id) || [],
+      assistants: transactionAssistantsMap.get(t.id) || [],
       total_till: Number(t.total_till || 0),
       target: Number(t.target || 0),
       fuel: Number(t.fuel || 0),
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
         date,
         ambulance_id,
         driver_id,
-        emergency_technician_ids,
+        assistant_ids,
         total_till,
         fuel,
         operation,
@@ -158,9 +158,9 @@ export async function POST(req: Request) {
     const [result] = await connection.query<ResultSetHeader>('INSERT INTO transactions SET ?', [transactionData]);
     const transactionId = result.insertId;
 
-    if (emergency_technician_ids && emergency_technician_ids.length > 0) {
-        const technicianLinks = emergency_technician_ids.map((techId: number) => [transactionId, techId]);
-        await connection.query('INSERT INTO transaction_technicians (transaction_id, technician_id) VALUES ?', [technicianLinks]);
+    if (assistant_ids && assistant_ids.length > 0) {
+        const assistantLinks = assistant_ids.map((assistantId: number) => [transactionId, assistantId]);
+        await connection.query('INSERT INTO transaction_assistants (transaction_id, assistant_id) VALUES ?', [assistantLinks]);
     }
 
     await connection.commit();

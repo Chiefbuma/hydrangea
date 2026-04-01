@@ -3,15 +3,15 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { ArrowUpDown, Edit, Trash2 } from "lucide-react"
-import type { EmergencyTechnician } from "@/lib/types"
+import type { Assistant } from "@/lib/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-interface MedicalStaffColumnsProps {
-  onEdit: (staff: EmergencyTechnician) => void
-  onDelete: (staff: EmergencyTechnician) => void
+interface AssistantsColumnsProps {
+  onEdit: (assistant: Assistant) => void
+  onDelete: (assistant: Assistant) => void
 }
 
-export const getColumns = ({ onEdit, onDelete }: MedicalStaffColumnsProps): ColumnDef<EmergencyTechnician>[] => [
+export const getColumns = ({ onEdit, onDelete }: AssistantsColumnsProps): ColumnDef<Assistant>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => {

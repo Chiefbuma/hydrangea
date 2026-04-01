@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { EmergencyTechnician } from '@/lib/types';
+import type { Assistant } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getColumns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
@@ -28,25 +28,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { getEmergencyTechnicians, createTechnician, updateTechnician, deleteTechnician } from '@/services/api-service';
+import { getAssistants, createAssistant, updateAssistant, deleteAssistant } from '@/services/api-service';
 
-export default function MedicalStaffClient({ initialMedicalStaff: initialData }: { initialMedicalStaff: EmergencyTechnician[] }) {
-  const [medicalStaff, setMedicalStaff] = useState<EmergencyTechnician[]>(initialData);
+export default function AssistantsClient({ initialAssistants: initialData }: { initialAssistants: Assistant[] }) {
+  const [assistants, setAssistants] = useState<Assistant[]>(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<EmergencyTechnician | null>(null);
+  const [editingStaff, setEditingStaff] = useState<Assistant | null>(null);
   const [formData, setFormData] = useState({ name: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [staffToDelete, setStaffToDelete] = useState<EmergencyTechnician | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<Assistant | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const fetchTechnicians = useCallback(async () => {
     try {
-      const data = await getEmergencyTechnicians();
-      setMedicalStaff(data);
+      const data = await getAssistants();
+      setAssistants(data);
     } catch (err) {
       toast({
         variant: 'destructive',
@@ -62,7 +62,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     }
   }, [initialData, fetchTechnicians]);
 
-  const handleOpenModal = (staff: EmergencyTechnician | null) => {
+  const handleOpenModal = (staff: Assistant | null) => {
     setEditingStaff(staff);
     if (staff) {
       setFormData({ name: staff.name });
@@ -84,9 +84,9 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     
     try {
         if (editingStaff) {
-            await updateTechnician(editingStaff.id, formData);
+            await updateAssistant(editingStaff.id, formData);
         } else {
-            await createTechnician(formData);
+            await createAssistant(formData);
         }
         
         await fetchTechnicians();
@@ -107,7 +107,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     }
   };
   
-  const handleOpenDeleteDialog = (staff: EmergencyTechnician) => {
+  const handleOpenDeleteDialog = (staff: Assistant) => {
     setStaffToDelete(staff);
     setIsDeleteDialogOpen(true);
   };
@@ -117,7 +117,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     setIsDeleting(true);
      
     try {
-        await deleteTechnician(staffToDelete.id);
+        await deleteAssistant(staffToDelete.id);
         await fetchTechnicians();
         toast({ title: "Success", description: "Assistant deleted successfully." });
     } catch (error) {
@@ -134,7 +134,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     setIsBulkDeleting(true);
     
     try {
-        await Promise.all(ids.map(id => deleteTechnician(id)));
+        await Promise.all(ids.map(id => deleteAssistant(id)));
         await fetchTechnicians();
         toast({ title: "Success", description: `${ids.length} assistant(s) deleted successfully.` });
     } catch (error) {
@@ -198,7 +198,7 @@ export default function MedicalStaffClient({ initialMedicalStaff: initialData }:
     <div className="flex flex-col gap-4">
        <DataTable 
         columns={columns} 
-        data={medicalStaff}
+        data={assistants}
         customActions={CustomToolbarActions}
         bulkActions={BulkActions}
       />

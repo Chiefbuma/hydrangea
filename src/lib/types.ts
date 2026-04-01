@@ -27,7 +27,7 @@ export type Driver = {
   avatarUrl?: string;
 }
 
-export type EmergencyTechnician = {
+export type Assistant = {
   id: number;
   name: string;
   avatarUrl?: string;
@@ -38,7 +38,7 @@ export type Transaction = {
     date: string;
     ambulance: Ambulance;
     driver: Driver;
-    emergency_technicians: EmergencyTechnician[];
+    assistants: Assistant[];
     total_till: number;
     target: number;
     fuel: number;
