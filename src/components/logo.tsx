@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 type LogoProps = {
@@ -6,13 +5,12 @@ type LogoProps = {
 };
 
 const Logo = ({ className }: LogoProps) => (
-  <Image
+  <img
     src="/images/hydrangea-logo.png"
     alt="Hydrangea Investments"
-    width={720}
-    height={180}
-    priority
     className={cn('h-auto w-auto object-contain', className)}
+    loading="eager"
+    decoding="async"
   />
 );
 
