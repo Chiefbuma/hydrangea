@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, CreditCard, Calculator, Loader2, Info, CalendarDays, Wallet } from 'lucide-react';
@@ -42,6 +43,7 @@ const formatCurrency = (value: number) => {
 };
 
 export default function LoansClient() {
+  const router = useRouter();
   const { toast } = useToast();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
@@ -369,62 +371,60 @@ export default function LoansClient() {
       </Dialog>
 
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-                <DialogTitle className="text-blue-900">Loan Details</DialogTitle>
-                <DialogDescription className="text-xs uppercase font-bold tracking-widest">Reference: {selectedLoan?.loan_id}</DialogDescription>
+        <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden">
+            <DialogHeader className="p-4 bg-slate-50/50 border-b">
+                <DialogTitle className="text-blue-900 flex items-center gap-2 text-sm">
+                   <Wallet className="h-4 w-4 text-blue-600" />
+                   Loan Detail: {selectedLoan?.loan_id}
+                </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6 pt-2">
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Borrower</p>
-                        <p className="text-sm font-semibold">{selectedLoan?.borrower_name}</p>
+            <div className="p-4 space-y-4">
+                <div className="grid grid-cols-3 gap-4 p-3 rounded-lg border border-dashed bg-slate-50/30">
+                    <div className="space-y-0.5">
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Original Principal</p>
+                        <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
                     </div>
-                    <div className="space-y-1 text-right">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Status</p>
-                        <Badge variant="outline" className="text-[10px]">{selectedLoan ? (selectedLoan.status === 3 ? 'Completed' : 'Active') : '-'}</Badge>
+                    <div className="space-y-0.5">
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Total Repayable</p>
+                        <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
+                    </div>
+                    <div className="space-y-0.5 text-right">
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Release Date</p>
+                        <p className="text-xs font-bold flex items-center justify-end gap-1">
+                            <CalendarDays className="h-3 w-3 text-slate-400" />
+                            {selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}
+                        </p>
                     </div>
                 </div>
 
-                <Separator />
-
-                <div className="grid grid-cols-2 gap-y-4">
-                    <div className="flex items-center gap-2">
-                        <Wallet className="h-4 w-4 text-slate-400" />
-                        <div>
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Principal</p>
-                            <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
-                        </div>
+                <div className="grid grid-cols-3 gap-2 items-end pt-2 border-t border-slate-100">
+                    <div className="flex flex-col">
+                        <p className="text-[9px] uppercase font-bold text-emerald-600 tracking-wider">Remaining</p>
+                        <p className="text-lg font-black text-emerald-700 leading-none">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
                     </div>
-                    <div className="flex items-center gap-2 justify-end text-right">
-                        <div>
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Remaining</p>
-                            <p className="text-sm font-bold text-blue-600">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
-                        </div>
-                        <Info className="h-4 w-4 text-blue-400" />
+                    <div className="flex flex-col">
+                        <p className="text-[9px] uppercase font-bold text-blue-600 tracking-wider">Due Date</p>
+                        <p className="text-xs font-bold text-blue-800">{selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <CalendarDays className="h-4 w-4 text-slate-400" />
-                        <div>
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Released</p>
-                            <p className="text-sm">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 justify-end text-right">
-                        <div>
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Due Date</p>
-                            <p className="text-sm">{selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</p>
-                        </div>
-                        <CalendarDays className="h-4 w-4 text-slate-400" />
+                    <div className="flex flex-col items-end">
+                       <p className="text-[9px] uppercase font-bold text-muted-foreground mb-1 tracking-wider">Status</p>
+                       {selectedLoan && (
+                          <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-2 py-0 text-[9px] font-bold h-5">
+                            {selectedLoan.status === 3 ? 'COMPLETED' : 'ACTIVE'}
+                          </Badge>
+                       )}
                     </div>
                 </div>
 
                 <Button 
                     variant="outline" 
-                    className="w-full h-8 text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
-                    onClick={() => router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`)}
+                    className="w-full h-8 text-[10px] border-blue-200 text-blue-700 hover:bg-blue-50 font-bold"
+                    onClick={() => {
+                        setIsDetailsModalOpen(false);
+                        router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`);
+                    }}
                 >
-                    View Borrower Full Profile
+                    View Full Borrower Profile & Loan Ledger
                 </Button>
             </div>
         </DialogContent>
