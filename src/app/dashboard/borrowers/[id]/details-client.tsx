@@ -17,11 +17,11 @@ import {
   MapPin, 
   Loader2,
   CalendarDays,
-  Wallet
 } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getBorrowers, getLoans, getPayments } from '@/services/api-service';
@@ -201,7 +201,8 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       </div>
 
       <Dialog open={isLoanModalOpen} onOpenChange={setIsLoanModalOpen}>
-        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-xl">
+        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-xl bg-background">
+          <DialogTitle className="sr-only">Loan Transaction History</DialogTitle>
           <div className="p-6 space-y-4">
             <div className="overflow-hidden">
                 <DataTable 
@@ -211,30 +212,21 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                 />
             </div>
 
-            <div className="pt-4 flex items-end justify-between">
-                <div className="flex flex-col gap-1 flex-1">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[9px] uppercase font-bold text-emerald-600">Total Paid:</span>
-                        <span className="text-[10px] font-bold text-emerald-700">{formatCurrency(selectedLoanTotalPaid)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[9px] uppercase font-bold text-primary">Balance:</span>
-                        <span className="text-[10px] font-bold text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[9px] uppercase font-bold text-muted-foreground">Status:</span>
-                        <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
-                            <CalendarDays className="h-3 w-3" />
-                            <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
-                        </div>
-                    </div>
+            <div className="pt-4 flex flex-col gap-1 items-start">
+                <div className="flex items-center gap-2">
+                    <span className="text-[8px] uppercase font-black text-muted-foreground">Total Paid:</span>
+                    <span className="text-[9px] font-black text-emerald-600">{formatCurrency(selectedLoanTotalPaid)}</span>
                 </div>
-                <div className="flex flex-col items-end gap-3">
-                   {selectedLoan && (
-                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-2 py-0 h-5 text-[9px] font-black uppercase">
-                        {selectedLoan.status === 3 ? 'COMPLETED' : 'ACTIVE'}
-                      </Badge>
-                   )}
+                <div className="flex items-center gap-2">
+                    <span className="text-[8px] uppercase font-black text-muted-foreground">Remaining Balance:</span>
+                    <span className="text-[9px] font-black text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-[8px] uppercase font-black text-muted-foreground">Maturity Status:</span>
+                    <div className="flex items-center gap-1 text-[8px] font-black text-muted-foreground">
+                        <CalendarDays className="h-2 w-2" />
+                        <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
+                    </div>
                 </div>
             </div>
           </div>

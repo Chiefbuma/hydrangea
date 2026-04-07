@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, CreditCard, Calculator, Loader2, CalendarDays, Wallet } from 'lucide-react';
+import { PlusCircle, CreditCard, Calculator, Loader2, CalendarDays } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -288,7 +288,7 @@ export default function LoansClient() {
 
       {/* New Loan Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background">
           <DialogHeader><DialogTitle>New Loan Application</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmitLoan} className="space-y-6 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -357,7 +357,7 @@ export default function LoansClient() {
 
       {/* Payment Modal */}
       <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[400px] bg-background">
           <DialogHeader><DialogTitle className="text-emerald-700">Record Repayment</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmitPayment} className="space-y-4 py-4">
             <div className="space-y-1">
@@ -382,48 +382,44 @@ export default function LoansClient() {
 
       {/* Details Modal */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-xl">
+        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-xl bg-background">
+            <DialogTitle className="sr-only">Loan Ledger View</DialogTitle>
             <div className="p-6 space-y-4">
                 <div className="overflow-hidden">
-                    <div className="text-center py-4 bg-muted/30 rounded text-[10px] text-muted-foreground mb-4">
-                        Repayment Ledger
-                    </div>
-                    {/* Simplified view for generic loans list, details are on borrower profile */}
                     <div className="flex justify-center py-12 italic text-[10px] text-muted-foreground">
-                        Detailed ledger is viewable on the borrower's full profile.
+                        Repayment ledger is detailed on the borrower profile page.
                     </div>
                 </div>
 
-                <div className="pt-4 flex items-end justify-between">
-                    <div className="flex flex-col gap-1 flex-1">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] uppercase font-bold text-emerald-600">Total Paid:</span>
-                            <span className="text-[10px] font-bold text-emerald-700">{selectedLoan ? formatCurrency(selectedLoan.total_loan - selectedLoan.remaining_balance) : '-'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] uppercase font-bold text-primary">Balance:</span>
-                            <span className="text-[10px] font-bold text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] uppercase font-bold text-muted-foreground">Status:</span>
-                            <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
-                                <CalendarDays className="h-3 w-3" />
-                                <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
-                            </div>
+                <div className="pt-4 flex flex-col gap-1 items-start">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[8px] uppercase font-black text-muted-foreground">Total Paid:</span>
+                        <span className="text-[9px] font-black text-emerald-600">{selectedLoan ? formatCurrency(selectedLoan.total_loan - selectedLoan.remaining_balance) : '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[8px] uppercase font-black text-muted-foreground">Remaining Balance:</span>
+                        <span className="text-[9px] font-black text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[8px] uppercase font-black text-muted-foreground">Maturity Status:</span>
+                        <div className="flex items-center gap-1 text-[8px] font-black text-muted-foreground">
+                            <CalendarDays className="h-2 w-2" />
+                            <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
                         </div>
                     </div>
-                    <div className="flex flex-col items-end gap-4">
-                        <Button 
-                            variant="outline" 
-                            className="h-8 text-[10px] border-primary/20 text-primary px-3 font-black hover:bg-primary/5"
-                            onClick={() => {
-                                setIsDetailsModalOpen(false);
-                                router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`);
-                            }}
-                        >
-                            FULL PROFILE
-                        </Button>
-                    </div>
+                </div>
+                
+                <div className="flex justify-end pt-2">
+                    <Button 
+                        variant="outline" 
+                        className="h-7 text-[9px] border-primary/20 text-primary font-black hover:bg-primary/5"
+                        onClick={() => {
+                            setIsDetailsModalOpen(false);
+                            router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`);
+                        }}
+                    >
+                        GO TO FULL PROFILE
+                    </Button>
                 </div>
             </div>
         </DialogContent>
