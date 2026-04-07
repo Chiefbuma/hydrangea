@@ -385,20 +385,19 @@ export default function LoansClient() {
                         <p className="text-[10px] font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
                     </div>
                     <div className="space-y-0.5 text-right">
-                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Release</p>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Date</p>
                         <p className="text-[10px] font-bold">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yy') : '-'}</p>
                     </div>
                 </div>
 
-                <div className="max-h-[200px] overflow-y-auto">
-                    {/* Simplified payment indicator or small list if needed, but keeping it decluttered */}
-                    <div className="text-[10px] text-muted-foreground italic text-center py-4">
-                        Repayment records loaded...
+                <div className="rounded-md border border-slate-100 overflow-hidden">
+                    <div className="text-[10px] text-muted-foreground italic text-center py-4 bg-slate-50/30">
+                        Repayment ledger active...
                     </div>
                 </div>
 
                 <div className="pt-2 border-t flex items-end justify-between">
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 text-left">
                         <div className="flex flex-col">
                             <p className="text-[9px] uppercase font-bold text-emerald-600 leading-none">Total Paid</p>
                             <p className="text-base font-black text-emerald-700 leading-none">{selectedLoan ? formatCurrency(selectedLoan.total_loan - selectedLoan.remaining_balance) : '-'}</p>
