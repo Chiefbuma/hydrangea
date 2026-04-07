@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, CreditCard, Calculator, Loader2, Info, CalendarDays, Wallet } from 'lucide-react';
+import { PlusCircle, CreditCard, Calculator, Loader2, CalendarDays, Wallet } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +12,6 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,7 +30,6 @@ import type { Loan, LoanPlan, Borrower, PaymentFrequency } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Separator } from '@/components/ui/separator';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -177,8 +174,7 @@ export default function LoansClient() {
                     handleRowClick(loan);
                 }}
               >
-                <Info className="h-3 w-3 mr-1" />
-                Details
+                View
               </Button>
           </div>
         );
@@ -371,61 +367,69 @@ export default function LoansClient() {
       </Dialog>
 
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden">
-            <DialogHeader className="p-4 bg-slate-50/50 border-b">
-                <DialogTitle className="text-blue-900 flex items-center gap-2 text-sm">
-                   <Wallet className="h-4 w-4 text-blue-600" />
-                   Loan Detail: {selectedLoan?.loan_id}
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden">
+            <DialogHeader className="p-3 bg-slate-50/50 border-b">
+                <DialogTitle className="text-blue-900 flex items-center gap-1.5 text-xs font-bold">
+                   <Wallet className="h-3 w-3 text-blue-600" />
+                   Loan: {selectedLoan?.loan_id}
                 </DialogTitle>
             </DialogHeader>
-            <div className="p-4 space-y-4">
-                <div className="grid grid-cols-3 gap-4 p-3 rounded-lg border border-dashed bg-slate-50/30">
+            <div className="p-3 space-y-3">
+                <div className="grid grid-cols-3 gap-2 py-2 border-b border-dashed">
                     <div className="space-y-0.5">
-                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Original Principal</p>
-                        <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Principal</p>
+                        <p className="text-[10px] font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
                     </div>
                     <div className="space-y-0.5">
-                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Total Repayable</p>
-                        <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Payable</p>
+                        <p className="text-[10px] font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
                     </div>
                     <div className="space-y-0.5 text-right">
-                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Release Date</p>
-                        <p className="text-xs font-bold flex items-center justify-end gap-1">
-                            <CalendarDays className="h-3 w-3 text-slate-400" />
-                            {selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}
-                        </p>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Release</p>
+                        <p className="text-[10px] font-bold">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yy') : '-'}</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 items-end pt-2 border-t border-slate-100">
-                    <div className="flex flex-col">
-                        <p className="text-[9px] uppercase font-bold text-emerald-600 tracking-wider">Remaining</p>
-                        <p className="text-lg font-black text-emerald-700 leading-none">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                <div className="max-h-[200px] overflow-y-auto">
+                    {/* Simplified payment indicator or small list if needed, but keeping it decluttered */}
+                    <div className="text-[10px] text-muted-foreground italic text-center py-4">
+                        Repayment records loaded...
                     </div>
-                    <div className="flex flex-col">
-                        <p className="text-[9px] uppercase font-bold text-blue-600 tracking-wider">Due Date</p>
-                        <p className="text-xs font-bold text-blue-800">{selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</p>
+                </div>
+
+                <div className="pt-2 border-t flex items-end justify-between">
+                    <div className="flex flex-col gap-1">
+                        <div className="flex flex-col">
+                            <p className="text-[9px] uppercase font-bold text-emerald-600 leading-none">Total Paid</p>
+                            <p className="text-base font-black text-emerald-700 leading-none">{selectedLoan ? formatCurrency(selectedLoan.total_loan - selectedLoan.remaining_balance) : '-'}</p>
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-[9px] uppercase font-bold text-blue-600 leading-none">Remaining</p>
+                            <p className="text-base font-black text-blue-800 leading-none">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                        </div>
+                        <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
+                            <CalendarDays className="h-2 w-2" />
+                            <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yy') : '-'}</span>
+                        </div>
                     </div>
-                    <div className="flex flex-col items-end">
-                       <p className="text-[9px] uppercase font-bold text-muted-foreground mb-1 tracking-wider">Status</p>
-                       {selectedLoan && (
-                          <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-2 py-0 text-[9px] font-bold h-5">
+                    <div className="flex flex-col items-end gap-2">
+                        {selectedLoan && (
+                          <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-1.5 py-0 text-[8px] font-black h-4 uppercase">
                             {selectedLoan.status === 3 ? 'COMPLETED' : 'ACTIVE'}
                           </Badge>
-                       )}
+                        )}
+                        <Button 
+                            variant="outline" 
+                            className="h-7 text-[9px] border-blue-200 text-blue-700 px-2 font-black"
+                            onClick={() => {
+                                setIsDetailsModalOpen(false);
+                                router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`);
+                            }}
+                        >
+                            PROFILE
+                        </Button>
                     </div>
                 </div>
-
-                <Button 
-                    variant="outline" 
-                    className="w-full h-8 text-[10px] border-blue-200 text-blue-700 hover:bg-blue-50 font-bold"
-                    onClick={() => {
-                        setIsDetailsModalOpen(false);
-                        router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`);
-                    }}
-                >
-                    View Full Borrower Profile & Loan Ledger
-                </Button>
             </div>
         </DialogContent>
       </Dialog>

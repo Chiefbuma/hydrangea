@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
@@ -19,8 +18,7 @@ import {
   MapPin, 
   Loader2,
   CalendarDays,
-  Wallet,
-  Info
+  Wallet
 } from 'lucide-react';
 import { 
   Dialog,
@@ -29,7 +27,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { getBorrowers, getLoans, getPayments } from '@/services/api-service';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -88,7 +85,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
   const loanColumns: ColumnDef<Loan>[] = [
     {
       accessorKey: 'loan_id',
-      header: 'Loan ID',
+      header: 'ID',
       cell: ({ row }) => <span className="font-mono font-bold text-blue-700 text-xs">{row.original.loan_id}</span>
     },
     {
@@ -102,7 +99,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       cell: ({ row }) => {
         const s = row.original.status;
         const variants: any = { 0: 'secondary', 1: 'default', 2: 'outline', 3: 'secondary', 4: 'destructive' };
-        const labels: any = { 0: 'Request', 1: 'Confirmed', 2: 'Released', 3: 'Completed', 4: 'Denied' };
+        const labels: any = { 0: 'Req', 1: 'Conf', 2: 'Rel', 3: 'Comp', 4: 'Den' };
         return <Badge variant={variants[s]} className="text-[9px] py-0 h-4">{labels[s]}</Badge>;
       }
     },
@@ -117,17 +114,17 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     {
       accessorKey: 'payment_id',
       header: 'Receipt',
-      cell: ({ row }) => <span className="font-mono text-[10px]">{row.original.payment_id}</span>
+      cell: ({ row }) => <span className="font-mono text-[9px]">{row.original.payment_id}</span>
     },
     {
       accessorKey: 'payment_amount',
       header: 'Paid',
-      cell: ({ row }) => <span className="text-emerald-600 font-bold text-xs">+{formatCurrency(row.original.payment_amount)}</span>
+      cell: ({ row }) => <span className="text-emerald-600 font-bold text-[10px]">+{formatCurrency(row.original.payment_amount)}</span>
     },
     {
       accessorKey: 'payment_date',
       header: 'Date',
-      cell: ({ row }) => <span className="text-[10px]">{format(new Date(row.original.payment_date), 'MMM dd, yyyy')}</span>
+      cell: ({ row }) => <span className="text-[9px]">{format(new Date(row.original.payment_date), 'MMM dd, yy')}</span>
     }
   ];
 
@@ -207,34 +204,31 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       </div>
 
       <Dialog open={isLoanModalOpen} onOpenChange={setIsLoanModalOpen}>
-        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
-          <DialogHeader className="p-4 bg-slate-50/50 border-b">
-            <DialogTitle className="text-blue-900 flex items-center gap-2 text-base">
-               <Wallet className="h-4 w-4 text-blue-600" />
-               Loan Detail: {selectedLoan?.loan_id}
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden">
+          <DialogHeader className="p-3 bg-slate-50/50 border-b">
+            <DialogTitle className="text-blue-900 flex items-center gap-1.5 text-xs font-bold">
+               <Wallet className="h-3 w-3 text-blue-600" />
+               Loan: {selectedLoan?.loan_id}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="p-4 space-y-4">
-            <div className="grid grid-cols-3 gap-4 p-3 rounded-lg border border-dashed bg-slate-50/30">
+          <div className="p-3 space-y-3">
+            <div className="grid grid-cols-3 gap-2 py-2 border-b border-dashed">
                 <div className="space-y-0.5">
-                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Original Principal</p>
-                    <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Principal</p>
+                    <p className="text-[10px] font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
                 </div>
                 <div className="space-y-0.5">
-                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Total Repayable</p>
-                    <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Payable</p>
+                    <p className="text-[10px] font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
                 </div>
                 <div className="space-y-0.5 text-right">
-                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Release Date</p>
-                    <p className="text-xs font-bold flex items-center justify-end gap-1">
-                        <CalendarDays className="h-3 w-3 text-slate-400" />
-                        {selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}
-                    </p>
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Date</p>
+                    <p className="text-[10px] font-bold">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yy') : '-'}</p>
                 </div>
             </div>
 
-            <div className="border rounded-md">
+            <div className="rounded-md border border-slate-100 overflow-hidden">
                 <DataTable 
                     columns={repaymentColumns} 
                     data={selectedLoanPayments} 
@@ -242,19 +236,24 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                 />
             </div>
 
-            <div className="grid grid-cols-3 gap-2 items-end pt-2">
-                <div className="flex flex-col">
-                    <p className="text-[9px] uppercase font-bold text-emerald-600 tracking-wider">Total Paid</p>
-                    <p className="text-lg font-black text-emerald-700 leading-none">{formatCurrency(selectedLoanTotalPaid)}</p>
+            <div className="pt-2 border-t flex items-end justify-between">
+                <div className="flex flex-col gap-1 text-left">
+                    <div className="flex flex-col">
+                        <p className="text-[9px] uppercase font-bold text-emerald-600 leading-none">Total Paid</p>
+                        <p className="text-base font-black text-emerald-700 leading-none">{formatCurrency(selectedLoanTotalPaid)}</p>
+                    </div>
+                    <div className="flex flex-col">
+                        <p className="text-[9px] uppercase font-bold text-blue-600 leading-none">Remaining</p>
+                        <p className="text-base font-black text-blue-800 leading-none">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
+                        <CalendarDays className="h-2 w-2" />
+                        <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yy') : '-'}</span>
+                    </div>
                 </div>
-                <div className="flex flex-col">
-                    <p className="text-[9px] uppercase font-bold text-blue-600 tracking-wider">Remaining Balance</p>
-                    <p className="text-lg font-black text-blue-800 leading-none">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
-                </div>
-                <div className="flex flex-col items-end">
-                   <p className="text-[9px] uppercase font-bold text-muted-foreground mb-1 tracking-wider">Current Status</p>
+                <div className="flex flex-col items-end gap-2">
                    {selectedLoan && (
-                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-2 py-0 text-[9px] font-bold h-5">
+                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-1.5 py-0 text-[8px] font-black h-4 uppercase">
                         {selectedLoan.status === 3 ? 'COMPLETED' : 'ACTIVE'}
                       </Badge>
                    )}
@@ -266,4 +265,3 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     </motion.div>
   );
 }
-
