@@ -35,7 +35,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { getBorrowers, getLoans, getPayments } from '@/services/api-service';
 import { format } from 'date-fns';
-import { Badge } from '@/badge';
+import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import type { Loan, Payment, Borrower } from '@/lib/types';
@@ -161,11 +161,10 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         <Button variant="outline" size="icon" onClick={() => router.back()} className="h-8 w-8">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Borrower Profile</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Profile Card - Longer than wider */}
+        {/* Profile Card */}
         <div className="lg:col-span-1">
           <Card className="border shadow-none h-full bg-white dark:bg-slate-900 overflow-hidden">
             <CardHeader className="flex flex-col items-center pb-2 text-center border-b border-dashed">
@@ -201,10 +200,6 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         <div className="lg:col-span-3">
           <Card className="shadow-none border h-full">
             <CardContent className="pt-6">
-               <div className="flex items-center gap-2 mb-6 text-blue-700">
-                <HandCoins className="h-4 w-4" />
-                <span className="text-xs font-bold uppercase tracking-widest">Loan History</span>
-              </div>
               <DataTable 
                 columns={loanColumns} 
                 data={loans} 
@@ -251,10 +246,6 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
 
             {/* Repayment History Ledger */}
             <div className="space-y-3">
-                <div className="flex items-center gap-2 text-emerald-700">
-                    <Receipt className="h-4 w-4" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Repayment History</span>
-                </div>
                 <DataTable 
                     columns={repaymentColumns} 
                     data={selectedLoanPayments} 
