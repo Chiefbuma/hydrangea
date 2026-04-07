@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/ui/dataTable';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, CreditCard, Calculator, Loader2 } from 'lucide-react';
 import {
@@ -26,9 +26,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getLoans, getBorrowers, getLoanPlans, createLoan, createPayment } from '@/services/api-service';
-import type { Loan, LoanStatus, PaymentFrequency, Borrower, LoanPlan } from '@/lib/types';
+import type { Loan, LoanPlan, Borrower, PaymentFrequency } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
+import { motion } from 'framer-motion';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -233,7 +234,11 @@ export default function LoansClient() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }}
+      className="flex flex-col gap-6"
+    >
       <Card className="border shadow-none">
         <CardContent className="pt-6">
           {loading ? <div className="flex h-32 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div> : (
@@ -321,6 +326,6 @@ export default function LoansClient() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

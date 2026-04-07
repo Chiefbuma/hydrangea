@@ -2,13 +2,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/ui/dataTable';
 import { Card, CardContent } from '@/components/ui/card';
 import { getPayments } from '@/services/api-service';
 import type { Payment } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Calendar, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -55,12 +56,17 @@ export default function PaymentsClient() {
   ];
 
   return (
-    <Card className="border shadow-none">
-      <CardContent className="pt-6">
-        {loading ? <div className="flex h-32 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div> : (
-          <DataTable columns={columns} data={payments} initialPageSize={10} />
-        )}
-      </CardContent>
-    </Card>
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }}
+    >
+      <Card className="border shadow-none">
+        <CardContent className="pt-6">
+          {loading ? <div className="flex h-32 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div> : (
+            <DataTable columns={columns} data={payments} initialPageSize={10} />
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

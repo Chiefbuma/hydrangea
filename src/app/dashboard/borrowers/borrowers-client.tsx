@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/ui/dataTable';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Phone, CreditCard, Eye, Loader2 } from 'lucide-react';
 import {
@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getBorrowers, createBorrower } from '@/services/api-service';
 import type { Borrower } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
+import { motion } from 'framer-motion';
 
 export default function BorrowersClient() {
   const { toast } = useToast();
@@ -127,7 +128,11 @@ export default function BorrowersClient() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }}
+      className="flex flex-col gap-6"
+    >
       <Card className="border shadow-none">
         <CardContent className="pt-6">
           {loading ? (
@@ -178,6 +183,6 @@ export default function BorrowersClient() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

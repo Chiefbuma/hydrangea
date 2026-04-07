@@ -11,12 +11,11 @@ import {
   YAxis,
   Tooltip,
   Cell,
-  PieChart,
-  Pie,
 } from 'recharts';
 import { getLoans, getPayments } from '@/services/api-service';
 import type { Loan, Payment } from '@/lib/types';
 import { format } from 'date-fns';
+import { motion } from 'framer-motion';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -49,7 +48,11 @@ export default function AdminDashboardClient() {
   const COLORS = ['#94a3b8', '#3b82f6', '#10b981', '#6366f1', '#ef4444'];
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      className="flex flex-col gap-6"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 shadow-none border">
           <CardContent className="h-[400px] pt-6">
@@ -92,6 +95,6 @@ export default function AdminDashboardClient() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 }
