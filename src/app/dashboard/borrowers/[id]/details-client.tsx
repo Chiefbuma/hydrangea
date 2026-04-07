@@ -22,8 +22,6 @@ import {
 import { 
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getBorrowers, getLoans, getPayments } from '@/services/api-service';
@@ -42,8 +40,8 @@ const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', {
 
 const DetailItem = ({ label, value, icon: Icon }: { label: string; value: string; icon: any }) => (
   <div className="flex items-start gap-3 py-2">
-    <div className="bg-slate-100 p-2 rounded-full shrink-0">
-      <Icon className="h-4 w-4 text-slate-600" />
+    <div className="bg-muted p-2 rounded-full shrink-0">
+      <Icon className="h-4 w-4 text-muted-foreground" />
     </div>
     <div className="grid gap-0.5">
       <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">{label}</p>
@@ -85,7 +83,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     {
       accessorKey: 'loan_id',
       header: 'ID',
-      cell: ({ row }) => <span className="font-mono font-bold text-blue-700 text-xs">{row.original.loan_id}</span>
+      cell: ({ row }) => <span className="font-mono font-bold text-primary text-xs">{row.original.loan_id}</span>
     },
     {
       accessorKey: 'amount',
@@ -105,7 +103,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     {
       accessorKey: 'remaining_balance',
       header: 'Balance',
-      cell: ({ row }) => <span className="font-bold text-blue-600 text-xs">{formatCurrency(row.original.remaining_balance)}</span>
+      cell: ({ row }) => <span className="font-bold text-primary text-xs">{formatCurrency(row.original.remaining_balance)}</span>
     }
   ];
 
@@ -158,10 +156,10 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
-          <Card className="border shadow-lg h-full bg-white dark:bg-slate-900 overflow-hidden">
+          <Card className="border shadow-lg h-full overflow-hidden">
             <CardHeader className="flex flex-col items-center pb-4 text-center border-b border-dashed p-6">
-               <Avatar className="w-24 h-24 border-4 border-slate-50 shadow-md mb-4">
-                  <AvatarFallback className="text-2xl bg-blue-50 text-blue-700 font-bold">
+               <Avatar className="w-24 h-24 border-4 border-background shadow-md mb-4">
+                  <AvatarFallback className="text-2xl bg-muted text-primary font-bold">
                     {borrower.name.substring(0, 1)}
                   </AvatarFallback>
                </Avatar>
@@ -174,9 +172,9 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-               <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/20 text-center">
-                  <p className="text-[10px] uppercase font-black text-blue-600 dark:text-blue-400 mb-1">Portfolio Balance</p>
-                  <p className="text-2xl font-black text-blue-900 dark:text-blue-100">{formatCurrency(totalBalance)}</p>
+               <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 text-center">
+                  <p className="text-[10px] uppercase font-black text-primary mb-1">Portfolio Balance</p>
+                  <p className="text-2xl font-black text-primary">{formatCurrency(totalBalance)}</p>
                </div>
 
                <div className="space-y-1">
@@ -203,31 +201,9 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       </div>
 
       <Dialog open={isLoanModalOpen} onOpenChange={setIsLoanModalOpen}>
-        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
-          <DialogHeader className="p-6 bg-slate-50/50 border-b">
-            <DialogTitle className="text-blue-900 flex items-center gap-2 text-lg font-bold">
-               <Wallet className="h-5 w-5 text-blue-600" />
-               Loan Detail: {selectedLoan?.loan_id}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="p-6 space-y-6">
-            <div className="grid grid-cols-3 gap-4 pb-6 border-b border-dashed">
-                <div className="space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Original Principal</p>
-                    <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
-                </div>
-                <div className="space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Repayable</p>
-                    <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
-                </div>
-                <div className="space-y-1 text-right">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Release Date</p>
-                    <p className="text-sm font-bold">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}</p>
-                </div>
-            </div>
-
-            <div className="rounded-lg border border-slate-100 overflow-hidden">
+        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-xl">
+          <div className="p-6 space-y-4">
+            <div className="overflow-hidden">
                 <DataTable 
                     columns={repaymentColumns} 
                     data={selectedLoanPayments} 
@@ -235,27 +211,27 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                 />
             </div>
 
-            <div className="pt-6 border-t flex items-end justify-between">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 flex-1">
-                    <div className="space-y-1">
-                        <p className="text-[10px] uppercase font-black text-emerald-600">Total Paid</p>
-                        <p className="text-lg font-black text-emerald-700">{formatCurrency(selectedLoanTotalPaid)}</p>
+            <div className="pt-4 flex items-end justify-between">
+                <div className="flex flex-col gap-1 flex-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[9px] uppercase font-bold text-emerald-600">Total Paid:</span>
+                        <span className="text-[10px] font-bold text-emerald-700">{formatCurrency(selectedLoanTotalPaid)}</span>
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] uppercase font-black text-blue-600">Remaining Balance</p>
-                        <p className="text-lg font-black text-blue-800">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[9px] uppercase font-bold text-primary">Balance:</span>
+                        <span className="text-[10px] font-bold text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] uppercase font-black text-muted-foreground">Maturity Status</p>
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                            <CalendarDays className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-2">
+                        <span className="text-[9px] uppercase font-bold text-muted-foreground">Status:</span>
+                        <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
+                            <CalendarDays className="h-3 w-3" />
                             <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
                         </div>
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-3">
                    {selectedLoan && (
-                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-3 py-1 text-[10px] font-black uppercase">
+                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-2 py-0 h-5 text-[9px] font-black uppercase">
                         {selectedLoan.status === 3 ? 'COMPLETED' : 'ACTIVE'}
                       </Badge>
                    )}

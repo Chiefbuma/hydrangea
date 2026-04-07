@@ -116,7 +116,7 @@ export default function LoansClient() {
     {
       accessorKey: 'loan_id',
       header: 'ID',
-      cell: ({ row }) => <span className="font-mono text-xs font-bold text-blue-700">{row.original.loan_id}</span>
+      cell: ({ row }) => <span className="font-mono text-xs font-bold text-primary">{row.original.loan_id}</span>
     },
     {
       accessorKey: 'borrower_name',
@@ -131,7 +131,7 @@ export default function LoansClient() {
     {
       accessorKey: 'remaining_balance',
       header: 'Balance',
-      cell: ({ row }) => <span className="font-bold text-blue-600 text-xs">{formatCurrency(row.original.remaining_balance)}</span>
+      cell: ({ row }) => <span className="font-bold text-primary text-xs">{formatCurrency(row.original.remaining_balance)}</span>
     },
     {
       accessorKey: 'status',
@@ -256,7 +256,7 @@ export default function LoansClient() {
   };
 
   const Toolbar = (
-    <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 h-8 text-xs">
+    <Button onClick={() => setIsModalOpen(true)} className="bg-primary hover:bg-primary/90 h-8 text-xs">
       <PlusCircle className="mr-2 h-4 w-4" /> New Request
     </Button>
   );
@@ -272,7 +272,7 @@ export default function LoansClient() {
         <CardContent className="pt-6">
           {loading ? (
             <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
             <DataTable 
@@ -320,26 +320,26 @@ export default function LoansClient() {
               </div>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-xl border border-dashed">
+            <div className="bg-muted p-4 rounded-xl border border-dashed">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Calculation Projections</span>
                 <Button type="button" size="sm" variant="ghost" className="h-7 text-[10px] font-bold" onClick={handleCalculate}><Calculator className="h-3.5 w-3.5 mr-1.5" /> Calculate</Button>
               </div>
               {isCalculated && (
                 <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div className="flex justify-between items-center bg-white p-2 rounded border border-slate-100 shadow-sm">
+                  <div className="flex justify-between items-center bg-card p-2 rounded border shadow-sm">
                     <span className="text-muted-foreground">Interest:</span>
                     <span className="font-bold">{formatCurrency(calculationResult.interest)}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-white p-2 rounded border border-slate-100 shadow-sm">
+                  <div className="flex justify-between items-center bg-card p-2 rounded border shadow-sm">
                     <span className="text-muted-foreground">Total Payable:</span>
                     <span className="font-bold">{formatCurrency(calculationResult.total_loan)}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-white p-2 rounded border border-slate-100 shadow-sm">
+                  <div className="flex justify-between items-center bg-card p-2 rounded border shadow-sm">
                     <span className="text-muted-foreground">Periods:</span>
                     <span className="font-bold">{calculationResult.duration}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-white p-2 rounded border border-slate-100 shadow-sm">
+                  <div className="flex justify-between items-center bg-card p-2 rounded border shadow-sm">
                     <span className="text-muted-foreground">Final Due:</span>
                     <span className="font-bold">{calculationResult.due_date}</span>
                   </div>
@@ -362,7 +362,7 @@ export default function LoansClient() {
           <form onSubmit={handleSubmitPayment} className="space-y-4 py-4">
             <div className="space-y-1">
               <Label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Reference Loan ID</Label>
-              <p className="text-lg font-black text-blue-900">{paymentData.loan_id}</p>
+              <p className="text-lg font-black text-primary">{paymentData.loan_id}</p>
             </div>
             <div className="space-y-2">
               <Label className="text-xs">Amount (KES)</Label>
@@ -382,60 +382,46 @@ export default function LoansClient() {
 
       {/* Details Modal */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
-            <DialogHeader className="p-6 bg-slate-50/50 border-b">
-                <DialogTitle className="text-blue-900 flex items-center gap-2 text-lg font-bold">
-                   <Wallet className="h-5 w-5 text-blue-600" />
-                   Loan Detail: {selectedLoan?.loan_id}
-                </DialogTitle>
-            </DialogHeader>
-            <div className="p-6 space-y-6">
-                <div className="grid grid-cols-3 gap-4 pb-6 border-b border-dashed">
-                    <div className="space-y-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Original Principal</p>
-                        <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
+        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-xl">
+            <div className="p-6 space-y-4">
+                <div className="overflow-hidden">
+                    <div className="text-center py-4 bg-muted/30 rounded text-[10px] text-muted-foreground mb-4">
+                        Repayment Ledger
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Repayable</p>
-                        <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
-                    </div>
-                    <div className="space-y-1 text-right">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Release Date</p>
-                        <p className="text-sm font-bold">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}</p>
+                    {/* Simplified view for generic loans list, details are on borrower profile */}
+                    <div className="flex justify-center py-12 italic text-[10px] text-muted-foreground">
+                        Detailed ledger is viewable on the borrower's full profile.
                     </div>
                 </div>
 
-                <div className="rounded-lg border border-slate-100 overflow-hidden">
-                    <div className="text-xs text-muted-foreground italic text-center py-8 bg-slate-50/30">
-                        Detailed repayment ledger is viewable on the borrower's full profile.
-                    </div>
-                </div>
-
-                <div className="pt-6 border-t flex items-end justify-between">
-                    <div className="grid gap-4 sm:grid-cols-2 flex-1">
-                        <div className="space-y-1">
-                            <p className="text-[10px] uppercase font-black text-emerald-600">Total Paid</p>
-                            <p className="text-xl font-black text-emerald-700">{selectedLoan ? formatCurrency(selectedLoan.total_loan - selectedLoan.remaining_balance) : '-'}</p>
+                <div className="pt-4 flex items-end justify-between">
+                    <div className="flex flex-col gap-1 flex-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] uppercase font-bold text-emerald-600">Total Paid:</span>
+                            <span className="text-[10px] font-bold text-emerald-700">{selectedLoan ? formatCurrency(selectedLoan.total_loan - selectedLoan.remaining_balance) : '-'}</span>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] uppercase font-black text-blue-600">Current Balance</p>
-                            <p className="text-xl font-black text-blue-800">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] uppercase font-bold text-primary">Balance:</span>
+                            <span className="text-[10px] font-bold text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] uppercase font-bold text-muted-foreground">Status:</span>
+                            <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
+                                <CalendarDays className="h-3 w-3" />
+                                <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-col items-end gap-4">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                            <CalendarDays className="h-3.5 w-3.5" />
-                            <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
-                        </div>
                         <Button 
                             variant="outline" 
-                            className="h-9 text-xs border-blue-200 text-blue-700 px-4 font-black hover:bg-blue-50"
+                            className="h-8 text-[10px] border-primary/20 text-primary px-3 font-black hover:bg-primary/5"
                             onClick={() => {
                                 setIsDetailsModalOpen(false);
                                 router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`);
                             }}
                         >
-                            VIEW FULL PROFILE
+                            FULL PROFILE
                         </Button>
                     </div>
                 </div>
