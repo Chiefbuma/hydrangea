@@ -63,7 +63,7 @@ export default function BorrowersClient() {
           <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
             {row.original.name.charAt(0)}
           </div>
-          <span className="font-semibold">{row.original.name}</span>
+          <span className="font-semibold text-xs">{row.original.name}</span>
         </div>
       )
     },
@@ -71,8 +71,8 @@ export default function BorrowersClient() {
       accessorKey: 'national_id',
       header: 'National ID',
       cell: ({ row }) => (
-        <div className="flex items-center gap-1 font-mono text-xs">
-          <CreditCard className="h-3 w-3 text-muted-foreground" />
+        <div className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground uppercase">
+          <CreditCard className="h-3 w-3" />
           {row.original.national_id}
         </div>
       )
@@ -81,7 +81,7 @@ export default function BorrowersClient() {
       accessorKey: 'contact_no',
       header: 'Phone Number',
       cell: ({ row }) => (
-        <div className="flex items-center gap-1 text-sm">
+        <div className="flex items-center gap-1 text-xs">
           <Phone className="h-3 w-3 text-muted-foreground" />
           {row.original.contact_no}
         </div>
@@ -95,9 +95,13 @@ export default function BorrowersClient() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => router.push(`/dashboard/borrowers/${row.original.borrower_id}`)}
+            className="h-7 text-[10px]"
+            onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/dashboard/borrowers/${row.original.borrower_id}`);
+            }}
           >
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="h-3 w-3 mr-1" />
             View
           </Button>
         </div>
@@ -121,8 +125,12 @@ export default function BorrowersClient() {
     }
   };
 
+  const handleRowClick = (borrower: Borrower) => {
+    router.push(`/dashboard/borrowers/${borrower.borrower_id}`);
+  };
+
   const CustomToolbarActions = (
-    <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 h-8">
+    <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 h-8 text-xs">
       <PlusCircle className="mr-2 h-4 w-4" /> Add Borrower
     </Button>
   );
@@ -143,9 +151,10 @@ export default function BorrowersClient() {
           ) : (
             <DataTable 
               columns={columns} 
-              data={borrowers as any} 
+              data={borrowers} 
               initialPageSize={10} 
               customActions={CustomToolbarActions} 
+              onRowClick={handleRowClick}
             />
           )}
         </CardContent>
@@ -158,32 +167,32 @@ export default function BorrowersClient() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Full Name</Label>
+              <Label className="text-xs">Full Name</Label>
               <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Contact Number</Label>
+                <Label className="text-xs">Contact Number</Label>
                 <Input value={formData.contact_no} onChange={e => setFormData({...formData, contact_no: e.target.value})} required />
               </div>
               <div className="space-y-2">
-                <Label>National ID</Label>
+                <Label className="text-xs">National ID</Label>
                 <Input value={formData.national_id} onChange={e => setFormData({...formData, national_id: e.target.value})} required />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label className="text-xs">Email</Label>
               <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Address</Label>
+              <Label className="text-xs">Address</Label>
               <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
             </div>
             <DialogFooter className="mt-6">
               <DialogClose asChild>
-                <Button type="button" variant="ghost">Cancel</Button>
+                <Button type="button" variant="ghost" className="h-8 text-xs">Cancel</Button>
               </DialogClose>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isSubmitting}>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 h-8 text-xs" disabled={isSubmitting}>
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Confirm Registration
               </Button>

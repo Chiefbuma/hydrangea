@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { cn } from "@/lib/utils"
 
 interface DataTableToolbarProps<TData> {
   table: ReturnType<typeof useReactTable<TData>>
@@ -165,17 +166,16 @@ interface DataTableProps<TData, TValue> {
   customActions?: React.ReactNode
   bulkActions?: (table: ReturnType<typeof useReactTable<TData>>) => React.ReactNode
   initialPageSize?: number
+  onRowClick?: (row: TData) => void
 }
 
-// Add a generic ID type to allow for string or number IDs
-type RowWithId = { id: string | number };
-
-export function DataTable<TData extends RowWithId, TValue>({
+export function DataTable<TData, TValue>({
   columns,
   data,
   customActions,
   bulkActions,
   initialPageSize,
+  onRowClick
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -184,7 +184,6 @@ export function DataTable<TData extends RowWithId, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = React.useState('')
   
-  // Listen for filter reset events (e.g., after adding/updating/deleting rows)
   React.useEffect(() => {
     const handleResetFilter = () => {
       setGlobalFilter('')
@@ -193,7 +192,6 @@ export function DataTable<TData extends RowWithId, TValue>({
     return () => window.removeEventListener('resetTableFilter', handleResetFilter as EventListener)
   }, [])
   
-  // Extend columns to include a selection column if bulkActions is provided
   const tableColumns = React.useMemo(() => {
     if (!bulkActions) return columns;
 
@@ -249,7 +247,7 @@ export function DataTable<TData extends RowWithId, TValue>({
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table} customActions={customActions} bulkActions={bulkActions}/>
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -275,6 +273,8 @@ export function DataTable<TData extends RowWithId, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={cn(onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors")}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

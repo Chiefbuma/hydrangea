@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, CreditCard, Calculator, Loader2 } from 'lucide-react';
+import { PlusCircle, CreditCard, Calculator, Loader2, Info, CalendarDays, Wallet } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +31,7 @@ import type { Loan, LoanPlan, Borrower, PaymentFrequency } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
 import { motion } from 'framer-motion';
+import { Separator } from '@/components/ui/separator';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -48,6 +50,8 @@ export default function LoansClient() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCalculated, setIsCalculated] = useState(false);
 
@@ -104,6 +108,11 @@ export default function LoansClient() {
     setIsPaymentModalOpen(true);
   };
 
+  const handleRowClick = (loan: Loan) => {
+    setSelectedLoan(loan);
+    setIsDetailsModalOpen(true);
+  };
+
   const columns: ColumnDef<Loan>[] = [
     {
       accessorKey: 'loan_id',
@@ -148,12 +157,27 @@ export default function LoansClient() {
                 variant="outline" 
                 size="sm" 
                 className="h-7 text-[10px] border-emerald-200 bg-emerald-50 text-emerald-700"
-                onClick={() => handleOpenPayment(loan)}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenPayment(loan);
+                }}
               >
                 <CreditCard className="h-3 w-3 mr-1" />
                 Pay
               </Button>
             )}
+            <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-[10px]"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleRowClick(loan);
+                }}
+              >
+                <Info className="h-3 w-3 mr-1" />
+                Details
+              </Button>
           </div>
         );
       }
@@ -255,9 +279,10 @@ export default function LoansClient() {
           ) : (
             <DataTable 
               columns={columns} 
-              data={loans as any} 
+              data={loans} 
               initialPageSize={10} 
               customActions={Toolbar} 
+              onRowClick={handleRowClick}
             />
           )}
         </CardContent>
@@ -340,6 +365,68 @@ export default function LoansClient() {
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 h-8 text-xs" disabled={isSubmitting}>Post Payment</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+                <DialogTitle className="text-blue-900">Loan Details</DialogTitle>
+                <DialogDescription className="text-xs uppercase font-bold tracking-widest">Reference: {selectedLoan?.loan_id}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 pt-2">
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Borrower</p>
+                        <p className="text-sm font-semibold">{selectedLoan?.borrower_name}</p>
+                    </div>
+                    <div className="space-y-1 text-right">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Status</p>
+                        <Badge variant="outline" className="text-[10px]">{selectedLoan ? (selectedLoan.status === 3 ? 'Completed' : 'Active') : '-'}</Badge>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-2 gap-y-4">
+                    <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4 text-slate-400" />
+                        <div>
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Principal</p>
+                            <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 justify-end text-right">
+                        <div>
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Remaining</p>
+                            <p className="text-sm font-bold text-blue-600">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                        </div>
+                        <Info className="h-4 w-4 text-blue-400" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4 text-slate-400" />
+                        <div>
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Released</p>
+                            <p className="text-sm">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 justify-end text-right">
+                        <div>
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Due Date</p>
+                            <p className="text-sm">{selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</p>
+                        </div>
+                        <CalendarDays className="h-4 w-4 text-slate-400" />
+                    </div>
+                </div>
+
+                <Button 
+                    variant="outline" 
+                    className="w-full h-8 text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
+                    onClick={() => router.push(`/dashboard/borrowers/${selectedLoan?.borrower_id}`)}
+                >
+                    View Borrower Full Profile
+                </Button>
+            </div>
         </DialogContent>
       </Dialog>
     </motion.div>
