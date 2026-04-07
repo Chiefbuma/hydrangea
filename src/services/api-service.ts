@@ -2,7 +2,7 @@
 import type { Loan, Borrower, Payment, LoanType, LoanPlan, User } from '@/lib/types';
 import { MOCK_BORROWERS, MOCK_LOANS, MOCK_PAYMENTS, MOCK_LOAN_PLANS, MOCK_LOAN_TYPES, MOCK_USERS } from '@/lib/mock-data';
 
-// Helper for simulating async API calls with mock data
+// Helper for simulating async API calls with mock data to avoid 500 errors from missing database
 const simulate = <T>(data: T): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(data), 200));
 
 // --- Auth Functions ---
@@ -40,7 +40,7 @@ export async function createLoan(data: Partial<Loan>): Promise<Loan> {
     ...data, 
     loan_id: `L-${1000 + MOCK_LOANS.length + 1}`,
     borrower_name: borrower?.name || 'Unknown',
-    remaining_balance: data.total_loan,
+    remaining_balance: data.total_loan || 0,
     status: 0,
     created_at: new Date().toISOString() 
   } as Loan;
@@ -68,7 +68,7 @@ export async function createPayment(data: Partial<Payment>): Promise<any> {
   // Update loan balance in mock data
   const loan = MOCK_LOANS.find(l => l.loan_id === data.loan_id);
   if (loan) {
-    loan.remaining_balance = Math.max(0, loan.remaining_balance - (data.payment_amount || 0));
+    loan.remaining_balance = Math.max(0, (loan.remaining_balance || 0) - (data.payment_amount || 0));
     if (loan.remaining_balance === 0) loan.status = 3;
   }
   

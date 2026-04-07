@@ -27,7 +27,8 @@ import {
   Receipt, 
   Settings, 
   Loader2, 
-  ChevronRight
+  ChevronRight,
+  PlusCircle
 } from 'lucide-react';
 import type { User as AppUser } from '@/lib/types';
 import Logo from '@/components/logo';
@@ -51,13 +52,16 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUser({
-      id: 1,
-      name: 'System Admin',
-      email: 'admin@blueoak.com',
-      role: 'admin'
-    });
-    setLoading(false);
+    // Simulated auth check
+    setTimeout(() => {
+      setUser({
+        id: 1,
+        name: 'System Admin',
+        email: 'admin@blueoak.com',
+        role: 'admin'
+      });
+      setLoading(false);
+    }, 500);
   }, []);
 
   if (loading || !user) {
@@ -107,10 +111,30 @@ export default function DashboardLayout({
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Actions</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      asChild 
+                      tooltip="New Loan"
+                      className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                    >
+                      <Link href="/dashboard/loans">
+                        <PlusCircle className="h-4 w-4" />
+                        <span>New Loan</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 p-4">
              <div className="group-data-[collapsible=icon]:hidden text-[10px] text-muted-foreground italic">
-                 v2.0 Mock Layer
+                 v2.1 Build Optimized
              </div>
           </SidebarFooter>
         </Sidebar>
@@ -133,10 +157,10 @@ export default function DashboardLayout({
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
                 className="mx-auto max-w-7xl"
               >
                 {children}

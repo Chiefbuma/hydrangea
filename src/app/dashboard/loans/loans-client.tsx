@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DataTable } from '@/components/ui/dataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, CreditCard, Calculator, Loader2 } from 'lucide-react';
 import {
@@ -83,6 +83,8 @@ export default function LoansClient() {
       setLoans(l);
       setBorrowers(b);
       setPlans(p);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to sync data.' });
     } finally {
       setLoading(false);
     }
@@ -204,6 +206,8 @@ export default function LoansClient() {
       toast({ title: 'Submitted', description: 'Loan request has been logged.' });
       setIsModalOpen(false);
       await fetchData();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to create loan.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -222,6 +226,8 @@ export default function LoansClient() {
       toast({ title: 'Success', description: 'Repayment recorded.' });
       setIsPaymentModalOpen(false);
       await fetchData();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to post payment.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -229,20 +235,30 @@ export default function LoansClient() {
 
   const Toolbar = (
     <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 h-8 text-xs">
-      <PlusCircle className="mr-2 h-4 w-4" /> New Loan Request
+      <PlusCircle className="mr-2 h-4 w-4" /> New Request
     </Button>
   );
 
   return (
     <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, x: -20 }} 
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col gap-6"
     >
       <Card className="border shadow-none">
         <CardContent className="pt-6">
-          {loading ? <div className="flex h-32 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div> : (
-            <DataTable columns={columns} data={loans} initialPageSize={10} customActions={Toolbar} />
+          {loading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          ) : (
+            <DataTable 
+              columns={columns} 
+              data={loans as any} 
+              initialPageSize={10} 
+              customActions={Toolbar} 
+            />
           )}
         </CardContent>
       </Card>

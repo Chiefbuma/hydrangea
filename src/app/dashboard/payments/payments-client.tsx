@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DataTable } from '@/components/ui/dataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { Card, CardContent } from '@/components/ui/card';
 import { getPayments } from '@/services/api-service';
 import type { Payment } from '@/lib/types';
@@ -57,13 +57,21 @@ export default function PaymentsClient() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }}
     >
       <Card className="border shadow-none">
         <CardContent className="pt-6">
-          {loading ? <div className="flex h-32 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div> : (
-            <DataTable columns={columns} data={payments} initialPageSize={10} />
+          {loading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          ) : (
+            <DataTable 
+              columns={columns} 
+              data={payments as any} 
+              initialPageSize={10} 
+            />
           )}
         </CardContent>
       </Card>

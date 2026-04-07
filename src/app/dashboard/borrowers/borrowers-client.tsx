@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DataTable } from '@/components/ui/dataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Phone, CreditCard, Eye, Loader2 } from 'lucide-react';
 import {
@@ -129,16 +129,24 @@ export default function BorrowersClient() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, x: -20 }} 
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col gap-6"
     >
       <Card className="border shadow-none">
         <CardContent className="pt-6">
           {loading ? (
-            <div className="flex h-32 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
           ) : (
-            <DataTable columns={columns} data={borrowers} initialPageSize={10} customActions={CustomToolbarActions} />
+            <DataTable 
+              columns={columns} 
+              data={borrowers as any} 
+              initialPageSize={10} 
+              customActions={CustomToolbarActions} 
+            />
           )}
         </CardContent>
       </Card>
