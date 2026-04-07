@@ -1,11 +1,12 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'Hydrangea Fleet Management',
-  description: 'Hydrangea fleet operations for buses and ambulances',
+  title: 'BlueOak - Loan Management System',
+  description: 'Enterprise-grade loan tracking and financial management.',
 };
 
 export default function RootLayout({

@@ -2,12 +2,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useCollection } from '@/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Loader2, HandCoins, Calendar } from 'lucide-react';
+import { PlusCircle, Calendar, HandCoins, Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -28,7 +25,8 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import type { Loan, Borrower } from '@/lib/types';
+import { MOCK_LOANS, MOCK_BORROWERS } from '@/lib/mock-data';
+import type { Loan } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 
 const formatCurrency = (value: number) => {
@@ -40,15 +38,8 @@ const formatCurrency = (value: number) => {
 };
 
 export default function LoansClient() {
-  const db = useFirestore();
   const { toast } = useToast();
-  
-  const { data: loans, loading: loansLoading } = useCollection<Loan>(
-    db ? query(collection(db, 'loans'), orderBy('createdAt', 'desc')) : null
-  );
-  const { data: borrowers } = useCollection<Borrower>(
-    db ? collection(db, 'borrowers') : null
-  );
+  const [loans, setLoans] = useState<Loan[]>(MOCK_LOANS);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +52,11 @@ export default function LoansClient() {
 
   const columns: ColumnDef<Loan>[] = [
     {
+      accessorKey: 'id',
+      header: 'Loan ID',
+      cell: ({ row }) => <span className="font-mono text-xs font-bold text-blue-700">{row.original.id}</span>
+    },
+    {
       accessorKey: 'borrowerName',
       header: 'Borrower',
       cell: ({ row }) => <div className="font-medium">{row.original.borrowerName}</div>
@@ -72,8 +68,8 @@ export default function LoansClient() {
     },
     {
       accessorKey: 'remainingBalance',
-      header: 'Balance',
-      cell: ({ row }) => <div className="font-bold text-primary">{formatCurrency(row.original.remainingBalance)}</div>
+      header: 'Current Balance',
+      cell: ({ row }) => <div className="font-bold text-blue-600">{formatCurrency(row.original.remainingBalance)}</div>
     },
     {
       accessorKey: 'status',
@@ -84,6 +80,7 @@ export default function LoansClient() {
           pending: 'secondary',
           active: 'default',
           overdue: 'destructive',
+          disbursed: 'outline',
           completed: 'outline'
         };
         return <Badge variant={(variants[status] || 'secondary') as any} className="capitalize">{status}</Badge>
@@ -91,21 +88,19 @@ export default function LoansClient() {
     },
     {
       accessorKey: 'createdAt',
-      header: 'Created',
+      header: 'Application Date',
       cell: ({ row }) => (
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          {row.original.createdAt ? new Date(row.original.createdAt).toLocaleDateString() : '-'}
+          {new Date(row.original.createdAt).toLocaleDateString()}
         </div>
       )
     }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !borrowers) return;
-    
-    const selectedBorrower = borrowers.find(b => b.id === formData.borrowerId);
+    const selectedBorrower = MOCK_BORROWERS.find(b => b.id === formData.borrowerId);
     if (!selectedBorrower) return;
 
     setIsSubmitting(true);
@@ -113,8 +108,9 @@ export default function LoansClient() {
     const interest = Number(formData.interestRate) / 100;
     const totalRepayable = principal * (1 + interest);
 
-    try {
-      addDoc(collection(db, 'loans'), {
+    setTimeout(() => {
+      const newLoan: Loan = {
+        id: `L-${1000 + loans.length + 1}`,
         borrowerId: formData.borrowerId,
         borrowerName: selectedBorrower.name,
         principalAmount: principal,
@@ -123,78 +119,76 @@ export default function LoansClient() {
         totalRepayable,
         remainingBalance: totalRepayable,
         status: 'pending',
-        createdAt: serverTimestamp(),
-      });
+        createdAt: new Date().toISOString(),
+      };
 
+      setLoans([newLoan, ...loans]);
       toast({
-        title: 'Application Submitted',
-        description: `Loan for ${selectedBorrower.name} is now pending approval.`
+        title: 'Application Received',
+        description: `Loan application for ${selectedBorrower.name} is now pending.`
       });
       setIsModalOpen(false);
       setFormData({ borrowerId: '', principalAmount: '', interestRate: '15', termMonths: '12' });
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message
-      });
-    } finally {
       setIsSubmitting(false);
-    }
+    }, 1000);
   };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold font-headline tracking-tight">Loans</h1>
-          <p className="text-muted-foreground">Track applications and active disbursements.</p>
+        <div className="flex items-center gap-3">
+          <div className="bg-amber-500 p-2 rounded-lg shadow-sm">
+            <HandCoins className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Loan Portfolio</h1>
+            <p className="text-muted-foreground">Comprehensive tracking of all debt instruments.</p>
+          </div>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" /> New Application
+        <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+          <PlusCircle className="mr-2 h-4 w-4" /> New Loan Application
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-none shadow-sm overflow-hidden">
+        <div className="bg-blue-50/50 dark:bg-blue-900/10 p-4 border-b flex items-center gap-2">
+          <Info className="h-4 w-4 text-blue-600" />
+          <p className="text-sm text-blue-800 dark:text-blue-200">Total active entries: {loans.length}</p>
+        </div>
         <CardContent className="pt-6">
-          {loansLoading ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <DataTable columns={columns} data={loans || []} />
-          )}
+          <DataTable columns={columns} data={loans} initialPageSize={10} />
         </CardContent>
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>New Loan Application</DialogTitle>
+            <DialogTitle className="text-blue-700">Submit Loan Application</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <form onSubmit={handleSubmit} className="space-y-5 py-4">
             <div className="space-y-2">
-              <Label htmlFor="borrower">Borrower</Label>
+              <Label htmlFor="borrower">Select Borrower</Label>
               <Select 
                 value={formData.borrowerId} 
                 onValueChange={val => setFormData({...formData, borrowerId: val})}
                 required
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Borrower" />
+                <SelectTrigger className="border-blue-100">
+                  <SelectValue placeholder="Choose a registered borrower" />
                 </SelectTrigger>
                 <SelectContent>
-                  {borrowers?.map(b => (
-                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  {MOCK_BORROWERS.map(b => (
+                    <SelectItem key={b.id} value={b.id}>{b.name} ({b.idNumber})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="amount">Principal Amount (KES)</Label>
+              <Label htmlFor="amount">Requested Principal Amount (KES)</Label>
               <Input 
                 id="amount" 
                 type="number"
+                placeholder="e.g. 100000"
                 value={formData.principalAmount} 
                 onChange={e => setFormData({...formData, principalAmount: e.target.value})} 
                 required 
@@ -212,7 +206,7 @@ export default function LoansClient() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="term">Term (Months)</Label>
+                <Label htmlFor="term">Term Duration (Months)</Label>
                 <Input 
                   id="term" 
                   type="number"
@@ -222,13 +216,12 @@ export default function LoansClient() {
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="pt-4">
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="ghost">Cancel</Button>
               </DialogClose>
-              <Button type="submit" disabled={isSubmitting || !formData.borrowerId}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Submit Application
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isSubmitting || !formData.borrowerId}>
+                {isSubmitting ? 'Processing...' : 'Submit for Review'}
               </Button>
             </DialogFooter>
           </form>

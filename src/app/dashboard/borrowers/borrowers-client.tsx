@@ -2,12 +2,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useCollection } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Loader2, Mail, Phone, MapPin } from 'lucide-react';
+import { PlusCircle, Mail, Phone, MapPin, UserCheck } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,18 +15,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { MOCK_BORROWERS } from '@/lib/mock-data';
 import type { Borrower } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 
 export default function BorrowersClient() {
-  const db = useFirestore();
   const { toast } = useToast();
-  const { data: borrowers, loading } = useCollection<Borrower>(
-    db ? collection(db, 'borrowers') : null
-  );
-
+  const [borrowers, setBorrowers] = useState<Borrower[]>(MOCK_BORROWERS);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -43,12 +37,19 @@ export default function BorrowersClient() {
   const columns: ColumnDef<Borrower>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
-      cell: ({ row }) => <div className="font-medium">{row.original.name}</div>
+      header: 'Borrower Name',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+            {row.original.name.charAt(0)}
+          </div>
+          <span className="font-semibold">{row.original.name}</span>
+        </div>
+      )
     },
     {
       accessorKey: 'idNumber',
-      header: 'ID Number',
+      header: 'National ID',
     },
     {
       accessorKey: 'contact',
@@ -64,75 +65,69 @@ export default function BorrowersClient() {
       accessorKey: 'address',
       header: 'Address',
       cell: ({ row }) => (
-        <div className="flex items-center gap-1 text-xs">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <MapPin className="h-3 w-3" /> {row.original.address}
         </div>
       )
     }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db) return;
     setIsSubmitting(true);
 
-    try {
-      addDoc(collection(db, 'borrowers'), {
+    setTimeout(() => {
+      const newBorrower: Borrower = {
         ...formData,
-        createdAt: serverTimestamp(),
-      });
+        id: `b${Date.now()}`,
+        createdAt: new Date().toISOString(),
+      };
 
+      setBorrowers([newBorrower, ...borrowers]);
       toast({
-        title: 'Borrower Added',
-        description: `${formData.name} has been added to the system.`
+        title: 'Borrower Registered',
+        description: `${formData.name} is now in the system.`
       });
       setIsModalOpen(false);
       setFormData({ name: '', email: '', phone: '', idNumber: '', address: '' });
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message
-      });
-    } finally {
       setIsSubmitting(false);
-    }
+    }, 800);
   };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold font-headline tracking-tight">Borrowers</h1>
-          <p className="text-muted-foreground">Manage your customer base.</p>
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-600 p-2 rounded-lg">
+            <UserCheck className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Borrower Management</h1>
+            <p className="text-muted-foreground">Detailed list of all registered borrowers.</p>
+          </div>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
           <PlusCircle className="mr-2 h-4 w-4" /> Add Borrower
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-none shadow-sm">
         <CardContent className="pt-6">
-          {loading ? (
-            <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <DataTable columns={columns} data={borrowers || []} />
-          )}
+          <DataTable columns={columns} data={borrowers} initialPageSize={10} />
         </CardContent>
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Add New Borrower</DialogTitle>
+            <DialogTitle className="text-blue-700">Register New Borrower</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input 
                 id="name" 
+                placeholder="e.g. Samuel Karanja"
                 value={formData.name} 
                 onChange={e => setFormData({...formData, name: e.target.value})} 
                 required 
@@ -144,15 +139,17 @@ export default function BorrowersClient() {
                 <Input 
                   id="email" 
                   type="email"
+                  placeholder="name@email.com"
                   value={formData.email} 
                   onChange={e => setFormData({...formData, email: e.target.value})} 
                   required 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <Input 
                   id="phone" 
+                  placeholder="+254..."
                   value={formData.phone} 
                   onChange={e => setFormData({...formData, phone: e.target.value})} 
                   required 
@@ -169,21 +166,21 @@ export default function BorrowersClient() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address">Physical Address</Label>
               <Input 
                 id="address" 
+                placeholder="City, Street, Building"
                 value={formData.address} 
                 onChange={e => setFormData({...formData, address: e.target.value})} 
                 required 
               />
             </div>
-            <DialogFooter>
+            <DialogFooter className="mt-6">
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="ghost">Cancel</Button>
               </DialogClose>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Borrower
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isSubmitting}>
+                {isSubmitting ? 'Registering...' : 'Save Borrower'}
               </Button>
             </DialogFooter>
           </form>
