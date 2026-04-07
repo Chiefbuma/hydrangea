@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Card, 
@@ -17,21 +18,42 @@ import {
   MapPin, 
   HandCoins, 
   History,
+  Loader2
 } from 'lucide-react';
-import { MOCK_BORROWERS, MOCK_LOANS, MOCK_PAYMENTS } from '@/lib/mock-data';
+import { getBorrowers, getLoans, getPayments } from '@/services/api-service';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
-import type { Loan, Payment } from '@/lib/types';
+import type { Loan, Payment, Borrower } from '@/lib/types';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KES', minimumFractionDigits: 0 }).format(val);
 
 export default function BorrowerDetailsClient({ id }: { id: string }) {
   const router = useRouter();
-  const borrower = useMemo(() => MOCK_BORROWERS.find(b => b.borrower_id === id), [id]);
-  const loans = useMemo(() => MOCK_LOANS.filter(l => l.borrower_id === id), [id]);
-  const payments = useMemo(() => MOCK_PAYMENTS.filter(p => p.borrower_id === id), [id]);
+  const [borrower, setBorrower] = useState<Borrower | null>(null);
+  const [loans, setLoans] = useState<Loan[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [allB, allL, allP] = await Promise.all([getBorrowers(), getLoans(), getPayments()]);
+        const foundB = allB.find(b => b.borrower_id === id);
+        if (foundB) {
+          setBorrower(foundB);
+          setLoans(allL.filter(l => l.borrower_id === id));
+          setPayments(allP.filter(p => p.borrower_id === id));
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [id]);
+
+  const totalBalance = useMemo(() => loans.reduce((acc, curr) => acc + curr.remaining_balance, 0), [loans]);
 
   const loanColumns: ColumnDef<Loan>[] = [
     {
@@ -53,9 +75,9 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       }
     },
     {
-      accessorKey: 'date_released',
-      header: 'Date',
-      cell: ({ row }) => format(new Date(row.original.date_released), 'MMM dd, yyyy')
+      accessorKey: 'remaining_balance',
+      header: 'Balance',
+      cell: ({ row }) => <span className="font-bold text-blue-600">{formatCurrency(row.original.remaining_balance)}</span>
     }
   ];
 
@@ -64,11 +86,6 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       accessorKey: 'payment_id',
       header: 'Ref',
       cell: ({ row }) => <span className="font-mono text-xs">{row.original.payment_id}</span>
-    },
-    {
-      accessorKey: 'loan_id',
-      header: 'Loan',
-      cell: ({ row }) => <span className="font-mono font-bold text-xs">{row.original.loan_id}</span>
     },
     {
       accessorKey: 'payment_amount',
@@ -82,6 +99,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     }
   ];
 
+  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   if (!borrower) return <div className="p-8 text-center">Borrower not found.</div>;
 
   return (
@@ -90,20 +108,22 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
+        <div className="flex flex-col">
           <h1 className="text-2xl font-bold tracking-tight text-blue-900">{borrower.name}</h1>
-          <p className="text-muted-foreground flex items-center gap-2 text-sm">
-            <CreditCard className="h-3 w-3" /> ID: {borrower.national_id}
-          </p>
+          <div className="flex gap-4 mt-1">
+             <p className="text-muted-foreground flex items-center gap-1 text-xs">
+              <CreditCard className="h-3 w-3" /> ID: {borrower.national_id}
+            </p>
+             <p className="text-blue-600 font-bold flex items-center gap-1 text-xs">
+              Portfolio Balance: {formatCurrency(totalBalance)}
+            </p>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <Card className="lg:col-span-1 shadow-sm h-fit">
-          <CardHeader>
-            <CardTitle className="text-lg">Contact Info</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Card className="lg:col-span-1 shadow-none border h-fit">
+          <CardContent className="space-y-4 pt-6">
             <div className="flex items-center gap-3 text-sm">
               <div className="bg-slate-100 p-2 rounded-full"><Phone className="h-4 w-4 text-slate-600" /></div>
               <div>
@@ -124,34 +144,30 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
               <div className="bg-slate-100 p-2 rounded-full"><MapPin className="h-4 w-4 text-slate-600" /></div>
               <div>
                 <p className="text-xs text-muted-foreground">Address</p>
-                <p className="font-medium">{borrower.address || 'Not specified'}</p>
+                <p className="font-medium text-xs">{borrower.address || 'Not specified'}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <div className="lg:col-span-3 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <HandCoins className="h-5 w-5 text-blue-600" />
-                Loan History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={loanColumns} data={loans} />
+          <Card className="shadow-none border">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4 text-blue-700">
+                <HandCoins className="h-5 w-5" />
+                <span className="font-bold">Loan History</span>
+              </div>
+              <DataTable columns={loanColumns} data={loans} initialPageSize={5} />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <History className="h-5 w-5 text-emerald-600" />
-                Payment Record
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={paymentColumns} data={payments} />
+          <Card className="shadow-none border">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4 text-emerald-700">
+                <History className="h-5 w-5" />
+                <span className="font-bold">Recent Repayments</span>
+              </div>
+              <DataTable columns={paymentColumns} data={payments} initialPageSize={5} />
             </CardContent>
           </Card>
         </div>

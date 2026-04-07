@@ -14,7 +14,6 @@ import {
   SidebarMenuButton, 
   SidebarMenuItem, 
   SidebarProvider,
-  SidebarTrigger,
   SidebarInset,
   SidebarGroup,
   SidebarGroupLabel,
@@ -29,7 +28,6 @@ import {
   Settings, 
   Loader2, 
   PlusCircle,
-  TrendingUp,
   ChevronRight
 } from 'lucide-react';
 import type { User as AppUser } from '@/lib/types';
@@ -84,7 +82,7 @@ export default function DashboardLayout({
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+              <SidebarGroupLabel>Menu</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navLinks.map((link) => {
@@ -109,41 +107,21 @@ export default function DashboardLayout({
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="New Loan Request">
-                      <Link href="/dashboard/loans">
-                        <PlusCircle className="h-4 w-4 text-emerald-600" />
-                        <span>New Loan Request</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 p-4">
-            <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-               <div className="group-data-[collapsible=icon]:hidden text-[10px] text-muted-foreground italic">
-                 v1.2.0 Production
-               </div>
-            </div>
+             <div className="group-data-[collapsible=icon]:hidden text-[10px] text-muted-foreground italic">
+                 v2.0 Mock Layer
+             </div>
           </SidebarFooter>
         </Sidebar>
 
         <SidebarInset className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-white dark:bg-slate-900 px-4 transition-[width,height] ease-linear">
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1" />
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-2 hidden sm:block" />
-              <nav className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground">
-                <span>Dashboard</span>
+              <nav className="flex items-center gap-1 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                <span>BlueOak</span>
                 <ChevronRight className="h-3 w-3" />
-                <span className="text-foreground font-medium capitalize">
+                <span className="text-foreground">
                   {pathname.split('/').pop()?.replace('-', ' ')}
                 </span>
               </nav>
@@ -151,7 +129,7 @@ export default function DashboardLayout({
             <Header user={user} />
           </header>
           
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <main className="flex-1 overflow-y-auto p-6">
             <div className="mx-auto max-w-7xl">
               {children}
             </div>

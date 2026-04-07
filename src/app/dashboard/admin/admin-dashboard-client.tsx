@@ -11,6 +11,8 @@ import {
   YAxis,
   Tooltip,
   Cell,
+  PieChart,
+  Pie,
 } from 'recharts';
 import { getLoans, getPayments } from '@/services/api-service';
 import type { Loan, Payment } from '@/lib/types';

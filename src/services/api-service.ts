@@ -1,95 +1,95 @@
 
 import type { Loan, Borrower, Payment, LoanType, LoanPlan, User } from '@/lib/types';
+import { MOCK_BORROWERS, MOCK_LOANS, MOCK_PAYMENTS, MOCK_LOAN_PLANS, MOCK_LOAN_TYPES, MOCK_USERS } from '@/lib/mock-data';
 
-const API_BASE = '/api';
-
-async function handleResponse(response: Response) {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || `Request failed with status ${response.status}`);
-  }
-  return response.json();
-}
+// Helper for simulating async API calls with mock data
+const simulate = <T>(data: T): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(data), 200));
 
 // --- Auth Functions ---
 export async function getCurrentUser(): Promise<User> {
-  return handleResponse(await fetch(`${API_BASE}/auth/me`));
+  return simulate(MOCK_USERS[0]);
 }
 
 export async function logout(): Promise<void> {
-  await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+  return simulate(undefined);
 }
 
 export async function forgotPassword(data: { email: string }): Promise<{ message: string }> {
-  return handleResponse(await fetch(`${API_BASE}/auth/forgot-password`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }));
+  return simulate({ message: 'If that email exists, a link has been sent.' });
 }
 
 // --- Borrower Functions ---
 export async function getBorrowers(): Promise<Borrower[]> {
-  return handleResponse(await fetch(`${API_BASE}/borrowers`));
+  return simulate([...MOCK_BORROWERS]);
 }
 
 export async function createBorrower(data: Partial<Borrower>): Promise<Borrower> {
-  return handleResponse(await fetch(`${API_BASE}/borrowers`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }));
+  const newB = { ...data, borrower_id: `b${Date.now()}`, created_at: new Date().toISOString() } as Borrower;
+  MOCK_BORROWERS.push(newB);
+  return simulate(newB);
 }
 
 // --- Loan Functions ---
 export async function getLoans(): Promise<Loan[]> {
-  return handleResponse(await fetch(`${API_BASE}/loans`));
+  return simulate([...MOCK_LOANS]);
 }
 
 export async function createLoan(data: Partial<Loan>): Promise<Loan> {
-  return handleResponse(await fetch(`${API_BASE}/loans`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }));
+  const borrower = MOCK_BORROWERS.find(b => b.borrower_id === data.borrower_id);
+  const newL = { 
+    ...data, 
+    loan_id: `L-${1000 + MOCK_LOANS.length + 1}`,
+    borrower_name: borrower?.name || 'Unknown',
+    remaining_balance: data.total_loan,
+    status: 0,
+    created_at: new Date().toISOString() 
+  } as Loan;
+  MOCK_LOANS.push(newL);
+  return simulate(newL);
 }
 
 export async function getLoanTypes(): Promise<LoanType[]> {
-  return handleResponse(await fetch(`${API_BASE}/loan-types`));
+  return simulate([...MOCK_LOAN_TYPES]);
 }
 
 export async function getLoanPlans(): Promise<LoanPlan[]> {
-  return handleResponse(await fetch(`${API_BASE}/loan-plans`));
+  return simulate([...MOCK_LOAN_PLANS]);
 }
 
 // --- Payment Functions ---
 export async function getPayments(): Promise<Payment[]> {
-  return handleResponse(await fetch(`${API_BASE}/payments`));
+  return simulate([...MOCK_PAYMENTS]);
 }
 
 export async function createPayment(data: Partial<Payment>): Promise<any> {
-  return handleResponse(await fetch(`${API_BASE}/payments`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }));
+  const newP = { ...data, payment_id: `p${Date.now()}`, created_at: new Date().toISOString() } as Payment;
+  MOCK_PAYMENTS.push(newP);
+  
+  // Update loan balance in mock data
+  const loan = MOCK_LOANS.find(l => l.loan_id === data.loan_id);
+  if (loan) {
+    loan.remaining_balance = Math.max(0, loan.remaining_balance - (data.payment_amount || 0));
+    if (loan.remaining_balance === 0) loan.status = 3;
+  }
+  
+  return simulate({ message: 'Payment recorded' });
 }
 
 // --- User Management ---
 export async function getUsers(): Promise<User[]> {
-  return handleResponse(await fetch(`${API_BASE}/users`));
+  return simulate([...MOCK_USERS]);
 }
 
 export async function createUser(data: Partial<User>): Promise<User> {
-  return handleResponse(await fetch(`${API_BASE}/users`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }));
+  const newU = { ...data, id: Date.now() } as User;
+  MOCK_USERS.push(newU);
+  return simulate(newU);
 }
 
 export async function updateUser(id: number | string, data: Partial<User>): Promise<any> {
-  return handleResponse(await fetch(`${API_BASE}/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }));
+  return simulate({ message: 'User updated' });
 }
 
 export async function deleteUser(id: number | string): Promise<void> {
-  await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
+  return simulate(undefined);
 }

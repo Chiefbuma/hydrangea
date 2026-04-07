@@ -2,20 +2,8 @@
 import { Borrower, Loan, Payment, LoanType, LoanPlan, User } from './types';
 
 export const MOCK_USERS: User[] = [
-  {
-    id: 1,
-    name: 'System Admin',
-    email: 'admin@blueoak.com',
-    role: 'admin',
-    avatarUrl: 'https://picsum.photos/seed/admin/200'
-  },
-  {
-    id: 2,
-    name: 'Sarah Staff',
-    email: 'sarah@blueoak.com',
-    role: 'staff',
-    avatarUrl: 'https://picsum.photos/seed/sarah/200'
-  }
+  { id: 1, name: 'System Admin', email: 'admin@blueoak.com', role: 'admin' },
+  { id: 2, name: 'Sarah Staff', email: 'sarah@blueoak.com', role: 'staff' }
 ];
 
 export const MOCK_BORROWERS: Borrower[] = [
@@ -26,7 +14,7 @@ export const MOCK_BORROWERS: Borrower[] = [
     national_id: '12345678',
     email: 'john.doe@example.com',
     address: '123 Nairobi St, Westlands, Nairobi',
-    created_at: new Date('2023-10-01').toISOString(),
+    created_at: '2023-10-01T00:00:00Z',
   },
   {
     borrower_id: 'b2',
@@ -35,8 +23,17 @@ export const MOCK_BORROWERS: Borrower[] = [
     national_id: '87654321',
     email: 'jane.smith@example.com',
     address: '456 Mombasa Rd, Nyali, Mombasa',
-    created_at: new Date('2023-11-15').toISOString(),
+    created_at: '2023-11-15T00:00:00Z',
   },
+  {
+    borrower_id: 'b3',
+    name: 'Robert Wilson',
+    contact_no: '0733445566',
+    national_id: '11223344',
+    email: 'robert.wilson@example.com',
+    address: '789 Kisumu Rd, Milimani',
+    created_at: '2024-01-01T00:00:00Z',
+  }
 ];
 
 export const MOCK_LOAN_TYPES: LoanType[] = [
@@ -65,7 +62,7 @@ export const MOCK_LOANS: Loan[] = [
     date_released: '2023-11-01',
     due_date: '2024-02-21',
     remaining_balance: 32000,
-    created_at: '2023-10-25',
+    created_at: '2023-10-25T00:00:00Z',
   },
   {
     loan_id: 'L-1002',
@@ -82,7 +79,7 @@ export const MOCK_LOANS: Loan[] = [
     date_released: '2024-03-01',
     due_date: '2024-06-01',
     remaining_balance: 115000,
-    created_at: '2024-02-20',
+    created_at: '2024-02-20T00:00:00Z',
   },
   {
     loan_id: 'L-0995',
@@ -99,7 +96,7 @@ export const MOCK_LOANS: Loan[] = [
     date_released: '2023-01-01',
     due_date: '2023-03-01',
     remaining_balance: 0,
-    created_at: '2022-12-15',
+    created_at: '2022-12-15T00:00:00Z',
   },
 ];
 
