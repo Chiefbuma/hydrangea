@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Mail, Phone, MapPin, UserCheck } from 'lucide-react';
+import { PlusCircle, Phone, CreditCard, UserCheck, MapPin } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -28,16 +28,16 @@ export default function BorrowersClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    contact_no: '',
+    national_id: '',
     email: '',
-    phone: '',
-    idNumber: '',
     address: ''
   });
 
   const columns: ColumnDef<Borrower>[] = [
     {
       accessorKey: 'name',
-      header: 'Borrower Name',
+      header: 'Full Name',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
@@ -48,16 +48,22 @@ export default function BorrowersClient() {
       )
     },
     {
-      accessorKey: 'idNumber',
+      accessorKey: 'national_id',
       header: 'National ID',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1 font-mono text-xs">
+          <CreditCard className="h-3 w-3 text-muted-foreground" />
+          {row.original.national_id}
+        </div>
+      )
     },
     {
-      accessorKey: 'contact',
-      header: 'Contact Info',
+      accessorKey: 'contact_no',
+      header: 'Phone Number',
       cell: ({ row }) => (
-        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> {row.original.email}</div>
-          <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> {row.original.phone}</div>
+        <div className="flex items-center gap-1 text-sm">
+          <Phone className="h-3 w-3 text-muted-foreground" />
+          {row.original.contact_no}
         </div>
       )
     },
@@ -66,7 +72,8 @@ export default function BorrowersClient() {
       header: 'Address',
       cell: ({ row }) => (
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3" /> {row.original.address}
+          <MapPin className="h-3 w-3" />
+          {row.original.address || 'N/A'}
         </div>
       )
     }
@@ -74,22 +81,33 @@ export default function BorrowersClient() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation: Contact and ID must be unique
+    const isDuplicateContact = borrowers.some(b => b.contact_no === formData.contact_no);
+    const isDuplicateID = borrowers.some(b => b.national_id === formData.national_id);
+
+    if (isDuplicateContact) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Contact number already exists.' });
+      return;
+    }
+    if (isDuplicateID) {
+      toast({ variant: 'destructive', title: 'Error', description: 'National ID already exists.' });
+      return;
+    }
+
     setIsSubmitting(true);
 
     setTimeout(() => {
       const newBorrower: Borrower = {
         ...formData,
-        id: `b${Date.now()}`,
-        createdAt: new Date().toISOString(),
+        borrower_id: `b${Date.now()}`,
+        created_at: new Date().toISOString(),
       };
 
       setBorrowers([newBorrower, ...borrowers]);
-      toast({
-        title: 'Borrower Registered',
-        description: `${formData.name} is now in the system.`
-      });
+      toast({ title: 'Success', description: 'Borrower record created.' });
       setIsModalOpen(false);
-      setFormData({ name: '', email: '', phone: '', idNumber: '', address: '' });
+      setFormData({ name: '', contact_no: '', national_id: '', email: '', address: '' });
       setIsSubmitting(false);
     }, 800);
   };
@@ -102,8 +120,8 @@ export default function BorrowersClient() {
             <UserCheck className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Borrower Management</h1>
-            <p className="text-muted-foreground">Detailed list of all registered borrowers.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Borrower Records</h1>
+            <p className="text-muted-foreground">Manage client information and validation.</p>
           </div>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
@@ -124,63 +142,33 @@ export default function BorrowersClient() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input 
-                id="name" 
-                placeholder="e.g. Samuel Karanja"
-                value={formData.name} 
-                onChange={e => setFormData({...formData, name: e.target.value})} 
-                required 
-              />
+              <Label>Full Name</Label>
+              <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email"
-                  placeholder="name@email.com"
-                  value={formData.email} 
-                  onChange={e => setFormData({...formData, email: e.target.value})} 
-                  required 
-                />
+                <Label>Contact Number</Label>
+                <Input value={formData.contact_no} onChange={e => setFormData({...formData, contact_no: e.target.value})} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input 
-                  id="phone" 
-                  placeholder="+254..."
-                  value={formData.phone} 
-                  onChange={e => setFormData({...formData, phone: e.target.value})} 
-                  required 
-                />
+                <Label>National ID</Label>
+                <Input value={formData.national_id} onChange={e => setFormData({...formData, national_id: e.target.value})} required />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="idNumber">National ID / Passport</Label>
-              <Input 
-                id="idNumber" 
-                value={formData.idNumber} 
-                onChange={e => setFormData({...formData, idNumber: e.target.value})} 
-                required 
-              />
+              <Label>Email (Optional)</Label>
+              <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="address">Physical Address</Label>
-              <Input 
-                id="address" 
-                placeholder="City, Street, Building"
-                value={formData.address} 
-                onChange={e => setFormData({...formData, address: e.target.value})} 
-                required 
-              />
+              <Label>Physical Address</Label>
+              <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
             </div>
             <DialogFooter className="mt-6">
               <DialogClose asChild>
                 <Button type="button" variant="ghost">Cancel</Button>
               </DialogClose>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isSubmitting}>
-                {isSubmitting ? 'Registering...' : 'Save Borrower'}
+                {isSubmitting ? 'Saving...' : 'Confirm Registration'}
               </Button>
             </DialogFooter>
           </form>

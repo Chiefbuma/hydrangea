@@ -1,5 +1,7 @@
 
-export type LoanStatus = 'pending' | 'approved' | 'disbursed' | 'active' | 'overdue' | 'completed' | 'rejected';
+export type LoanStatus = 0 | 1 | 2 | 3 | 4; // 0=Request, 1=Confirmed, 2=Released, 3=Completed, 4=Denied
+
+export type PaymentFrequency = 'daily' | 'weekly' | 'monthly';
 
 export type User = {
   id: string | number;
@@ -10,38 +12,52 @@ export type User = {
 };
 
 export type Borrower = {
-  id: string;
+  borrower_id: string;
   name: string;
-  email: string;
-  phone: string;
-  idNumber: string;
-  address: string;
-  createdAt: string;
+  contact_no: string;
+  national_id: string;
+  email?: string;
+  address?: string;
+  created_at: string;
+};
+
+export type LoanType = {
+  ltype_id: string;
+  ltype_name: string;
+  ltype_desc: string;
+};
+
+export type LoanPlan = {
+  lplan_id: string;
+  lplan_interest: number;
+  lplan_penalty: number;
 };
 
 export type Loan = {
-  id: string;
-  borrowerId: string;
-  borrowerName: string;
-  principalAmount: number;
-  interestRate: number;
-  termMonths: number;
-  totalRepayable: number;
-  remainingBalance: number;
+  loan_id: string;
+  borrower_id: string;
+  borrower_name: string;
+  ltype_id: string;
+  lplan_id: string;
+  amount: number;
+  total_loan: number;
+  daily_amount: number;
+  duration: number;
+  payment_frequency: PaymentFrequency;
   status: LoanStatus;
-  startDate?: string;
-  disbursementDate?: string;
-  createdAt: string;
+  date_released: string;
+  due_date: string;
+  remaining_balance: number;
+  created_at: string;
 };
 
 export type Payment = {
-  id: string;
-  loanId: string;
-  borrowerId: string;
-  amount: number;
-  paymentDate: string;
-  method: 'cash' | 'bank_transfer' | 'mobile_money' | 'check';
-  reference?: string;
+  payment_id: string;
+  loan_id: string;
+  borrower_id: string;
+  payment_amount: number;
+  payment_date: string;
+  created_at: string;
 };
 
 export type DashboardStats = {
