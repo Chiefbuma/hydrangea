@@ -17,10 +17,8 @@ import {
   Mail, 
   CreditCard, 
   MapPin, 
-  HandCoins, 
   Loader2,
   CalendarDays,
-  Receipt,
   Wallet,
   Info
 } from 'lucide-react';
@@ -29,7 +27,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -48,13 +45,13 @@ const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', {
 }).format(val);
 
 const DetailItem = ({ label, value, icon: Icon }: { label: string; value: string; icon: any }) => (
-  <div className="flex items-start gap-3 py-2">
-    <div className="bg-slate-100 p-2 rounded-full shrink-0">
-      <Icon className="h-4 w-4 text-slate-600" />
+  <div className="flex items-start gap-3 py-1.5">
+    <div className="bg-slate-100 p-1.5 rounded-full shrink-0">
+      <Icon className="h-3.5 w-3.5 text-slate-600" />
     </div>
-    <div className="grid gap-0.5">
-      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">{label}</p>
-      <p className="text-sm font-medium leading-tight">{value || 'N/A'}</p>
+    <div className="grid gap-0">
+      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-tight">{label}</p>
+      <p className="text-xs font-medium leading-tight">{value || 'N/A'}</p>
     </div>
   </div>
 );
@@ -92,12 +89,12 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     {
       accessorKey: 'loan_id',
       header: 'Loan ID',
-      cell: ({ row }) => <span className="font-mono font-bold text-blue-700">{row.original.loan_id}</span>
+      cell: ({ row }) => <span className="font-mono font-bold text-blue-700 text-xs">{row.original.loan_id}</span>
     },
     {
       accessorKey: 'amount',
       header: 'Amount',
-      cell: ({ row }) => formatCurrency(row.original.amount)
+      cell: ({ row }) => <span className="text-xs">{formatCurrency(row.original.amount)}</span>
     },
     {
       accessorKey: 'status',
@@ -106,13 +103,13 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         const s = row.original.status;
         const variants: any = { 0: 'secondary', 1: 'default', 2: 'outline', 3: 'secondary', 4: 'destructive' };
         const labels: any = { 0: 'Request', 1: 'Confirmed', 2: 'Released', 3: 'Completed', 4: 'Denied' };
-        return <Badge variant={variants[s]} className="text-[10px] py-0">{labels[s]}</Badge>;
+        return <Badge variant={variants[s]} className="text-[9px] py-0 h-4">{labels[s]}</Badge>;
       }
     },
     {
       accessorKey: 'remaining_balance',
       header: 'Balance',
-      cell: ({ row }) => <span className="font-bold text-blue-600">{formatCurrency(row.original.remaining_balance)}</span>
+      cell: ({ row }) => <span className="font-bold text-blue-600 text-xs">{formatCurrency(row.original.remaining_balance)}</span>
     }
   ];
 
@@ -120,17 +117,17 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     {
       accessorKey: 'payment_id',
       header: 'Receipt',
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.payment_id}</span>
+      cell: ({ row }) => <span className="font-mono text-[10px]">{row.original.payment_id}</span>
     },
     {
       accessorKey: 'payment_amount',
-      header: 'Amount Paid',
-      cell: ({ row }) => <span className="text-emerald-600 font-bold">+{formatCurrency(row.original.payment_amount)}</span>
+      header: 'Paid',
+      cell: ({ row }) => <span className="text-emerald-600 font-bold text-xs">+{formatCurrency(row.original.payment_amount)}</span>
     },
     {
       accessorKey: 'payment_date',
       header: 'Date',
-      cell: ({ row }) => format(new Date(row.original.payment_date), 'MMM dd, yyyy')
+      cell: ({ row }) => <span className="text-[10px]">{format(new Date(row.original.payment_date), 'MMM dd, yyyy')}</span>
     }
   ];
 
@@ -155,39 +152,38 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     <motion.div 
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-4"
     >
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => router.back()} className="h-8 w-8">
+        <Button variant="outline" size="icon" onClick={() => router.back()} className="h-7 w-7">
           <ArrowLeft className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Profile Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-1">
           <Card className="border shadow-none h-full bg-white dark:bg-slate-900 overflow-hidden">
-            <CardHeader className="flex flex-col items-center pb-2 text-center border-b border-dashed">
-               <Avatar className="w-24 h-24 border-4 border-slate-50 shadow-sm mb-4">
-                  <AvatarFallback className="text-3xl bg-blue-50 text-blue-700 font-bold">
+            <CardHeader className="flex flex-col items-center pb-2 text-center border-b border-dashed p-4">
+               <Avatar className="w-16 h-16 border-2 border-slate-50 shadow-sm mb-2">
+                  <AvatarFallback className="text-xl bg-blue-50 text-blue-700 font-bold">
                     {borrower.name.substring(0, 1)}
                   </AvatarFallback>
                </Avatar>
-               <div className="space-y-1">
-                  <CardTitle className="text-xl font-bold tracking-tight">{borrower.name}</CardTitle>
-                  <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
+               <div className="space-y-0.5">
+                  <CardTitle className="text-lg font-bold tracking-tight">{borrower.name}</CardTitle>
+                  <div className="flex items-center justify-center gap-1 text-muted-foreground">
                     <CreditCard className="h-3 w-3" />
-                    <span className="text-[10px] font-bold uppercase">ID: {borrower.national_id}</span>
+                    <span className="text-[9px] font-bold uppercase">ID: {borrower.national_id}</span>
                   </div>
                </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-               <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/20 text-center">
-                  <p className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 mb-1">Portfolio Balance</p>
-                  <p className="text-xl font-black text-blue-900 dark:text-blue-100">{formatCurrency(totalBalance)}</p>
+            <CardContent className="p-4 space-y-4">
+               <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded-lg border border-blue-100 dark:border-blue-900/20 text-center">
+                  <p className="text-[9px] uppercase font-bold text-blue-600 dark:text-blue-400 mb-0.5">Portfolio Balance</p>
+                  <p className="text-lg font-black text-blue-900 dark:text-blue-100">{formatCurrency(totalBalance)}</p>
                </div>
 
-               <div className="space-y-1 px-1">
+               <div className="space-y-0.5">
                   <DetailItem icon={Phone} label="Contact" value={borrower.contact_no} />
                   <DetailItem icon={Mail} label="Email" value={borrower.email || 'N/A'} />
                   <DetailItem icon={MapPin} label="Address" value={borrower.address || 'N/A'} />
@@ -196,10 +192,9 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
           </Card>
         </div>
 
-        {/* Loan History Table */}
         <div className="lg:col-span-3">
           <Card className="shadow-none border h-full">
-            <CardContent className="pt-6">
+            <CardContent className="p-4">
               <DataTable 
                 columns={loanColumns} 
                 data={loans} 
@@ -211,41 +206,35 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Loan Details Modal */}
       <Dialog open={isLoanModalOpen} onOpenChange={setIsLoanModalOpen}>
-        <DialogContent className="sm:max-w-[650px]">
-          <DialogHeader>
-            <DialogTitle className="text-blue-900 flex items-center gap-2">
-               <Wallet className="h-5 w-5 text-blue-600" />
+        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
+          <DialogHeader className="p-4 bg-slate-50/50 border-b">
+            <DialogTitle className="text-blue-900 flex items-center gap-2 text-base">
+               <Wallet className="h-4 w-4 text-blue-600" />
                Loan Detail: {selectedLoan?.loan_id}
             </DialogTitle>
-            <DialogDescription className="text-xs">
-              Complete repayment history and balance summary for this specific loan.
-            </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-6 pt-2">
-            {/* Simple Summary Header */}
-            <div className="grid grid-cols-3 gap-6 p-4 rounded-xl border border-dashed bg-slate-50 dark:bg-slate-900/50">
-                <div className="space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Original Principal</p>
-                    <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
+          <div className="p-4 space-y-4">
+            <div className="grid grid-cols-3 gap-4 p-3 rounded-lg border border-dashed bg-slate-50/30">
+                <div className="space-y-0.5">
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Original Principal</p>
+                    <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
                 </div>
-                <div className="space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Total Repayable</p>
-                    <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
+                <div className="space-y-0.5">
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Total Repayable</p>
+                    <p className="text-xs font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
                 </div>
-                <div className="space-y-1 text-right">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Release Date</p>
-                    <p className="text-sm font-bold flex items-center justify-end gap-1.5">
-                        <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                <div className="space-y-0.5 text-right">
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Release Date</p>
+                    <p className="text-xs font-bold flex items-center justify-end gap-1">
+                        <CalendarDays className="h-3 w-3 text-slate-400" />
                         {selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}
                     </p>
                 </div>
             </div>
 
-            {/* Repayment History Ledger */}
-            <div className="space-y-3">
+            <div className="border rounded-md">
                 <DataTable 
                     columns={repaymentColumns} 
                     data={selectedLoanPayments} 
@@ -253,22 +242,19 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                 />
             </div>
 
-            <Separator />
-
-            {/* Bottom Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col gap-0.5">
-                    <p className="text-[10px] uppercase font-bold text-emerald-600">Total Paid</p>
-                    <p className="text-xl font-black text-emerald-700">{formatCurrency(selectedLoanTotalPaid)}</p>
+            <div className="grid grid-cols-3 gap-2 items-end pt-2">
+                <div className="flex flex-col">
+                    <p className="text-[9px] uppercase font-bold text-emerald-600 tracking-wider">Total Paid</p>
+                    <p className="text-lg font-black text-emerald-700 leading-none">{formatCurrency(selectedLoanTotalPaid)}</p>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                    <p className="text-[10px] uppercase font-bold text-blue-600">Remaining Balance</p>
-                    <p className="text-xl font-black text-blue-800">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                <div className="flex flex-col">
+                    <p className="text-[9px] uppercase font-bold text-blue-600 tracking-wider">Remaining Balance</p>
+                    <p className="text-lg font-black text-blue-800 leading-none">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
                 </div>
-                <div className="flex flex-col justify-end items-end">
-                   <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Current Status</p>
+                <div className="flex flex-col items-end">
+                   <p className="text-[9px] uppercase font-bold text-muted-foreground mb-1 tracking-wider">Current Status</p>
                    {selectedLoan && (
-                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-3 py-0.5">
+                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-2 py-0 text-[9px] font-bold h-5">
                         {selectedLoan.status === 3 ? 'COMPLETED' : 'ACTIVE'}
                       </Badge>
                    )}
@@ -280,3 +266,4 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     </motion.div>
   );
 }
+
