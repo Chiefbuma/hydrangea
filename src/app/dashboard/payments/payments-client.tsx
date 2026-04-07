@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useState } from 'react';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Receipt, CreditCard, Calendar } from 'lucide-react';
+import { PlusCircle, Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +24,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { MOCK_PAYMENTS, MOCK_LOANS } from '@/lib/mock-data';
-import type { Payment, Loan } from '@/lib/types';
+import type { Payment } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 
@@ -84,7 +83,7 @@ export default function PaymentsClient() {
 
     const amountNum = Number(formData.payment_amount);
     if (amountNum > loan.remaining_balance) {
-      toast({ variant: 'destructive', title: 'Payment Error', description: `Amount exceeds remaining balance of ${formatCurrency(loan.remaining_balance)}` });
+      toast({ variant: 'destructive', title: 'Payment Error', description: `Amount exceeds remaining balance` });
       return;
     }
 
@@ -101,33 +100,24 @@ export default function PaymentsClient() {
       };
 
       setPayments([newPayment, ...payments]);
-      toast({ title: 'Payment Recorded', description: `Repayment of ${formatCurrency(amountNum)} has been applied to ${loan.loan_id}.` });
+      toast({ title: 'Payment Recorded', description: 'Repayment applied.' });
       setIsModalOpen(false);
       setFormData({ loan_id: '', payment_amount: '', payment_date: format(new Date(), 'yyyy-MM-dd') });
       setIsSubmitting(false);
     }, 800);
   };
 
+  const CustomToolbarActions = (
+    <Button onClick={() => setIsModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 h-8">
+      <PlusCircle className="mr-2 h-4 w-4" /> Record Payment
+    </Button>
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-emerald-600 p-2 rounded-lg">
-            <Receipt className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-emerald-900 dark:text-emerald-100">Repayments</h1>
-            <p className="text-muted-foreground">Log collections and update account balances.</p>
-          </div>
-        </div>
-        <Button onClick={() => setIsModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
-          <PlusCircle className="mr-2 h-4 w-4" /> Record Payment
-        </Button>
-      </div>
-
       <Card className="border-none shadow-sm">
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={payments} initialPageSize={10} />
+          <DataTable columns={columns} data={payments} initialPageSize={10} customActions={CustomToolbarActions} />
         </CardContent>
       </Card>
 
@@ -144,7 +134,7 @@ export default function PaymentsClient() {
                 <SelectContent>
                   {MOCK_LOANS.filter(l => [2, 3].includes(l.status)).map(l => (
                     <SelectItem key={l.loan_id} value={l.loan_id}>
-                      {l.loan_id} - {l.borrower_name} (Bal: {formatCurrency(l.remaining_balance)})
+                      {l.loan_id} - {l.borrower_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

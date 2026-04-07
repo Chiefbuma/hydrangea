@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Phone, CreditCard, UserCheck, MapPin, Eye } from 'lucide-react';
+import { PlusCircle, Phone, CreditCard, Eye } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -119,26 +118,17 @@ export default function BorrowersClient() {
     }, 800);
   };
 
+  const CustomToolbarActions = (
+    <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 h-8">
+      <PlusCircle className="mr-2 h-4 w-4" /> Add Borrower
+    </Button>
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg">
-            <UserCheck className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Borrower Records</h1>
-            <p className="text-muted-foreground">Manage client profiles and credit history.</p>
-          </div>
-        </div>
-        <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Borrower
-        </Button>
-      </div>
-
       <Card className="border-none shadow-sm">
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={borrowers} initialPageSize={10} />
+          <DataTable columns={columns} data={borrowers} initialPageSize={10} customActions={CustomToolbarActions} />
         </CardContent>
       </Card>
 

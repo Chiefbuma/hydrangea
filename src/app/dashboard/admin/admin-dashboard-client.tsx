@@ -1,10 +1,7 @@
-
 'use client';
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { TrendingUp, Wallet, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { format } from 'date-fns';
 import {
   Bar,
   BarChart,
@@ -15,6 +12,7 @@ import {
   Cell,
 } from 'recharts';
 import { MOCK_LOANS, MOCK_PAYMENTS } from '@/lib/mock-data';
+import { format } from 'date-fns';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -26,33 +24,6 @@ const formatCurrency = (value: number) => {
 };
 
 export default function AdminDashboardClient() {
-  const stats = useMemo(() => {
-    // Total Disbursed: Loans with status 2 (Released), 3 (Completed)
-    const disbursed = MOCK_LOANS
-      .filter(l => [2, 3].includes(l.status))
-      .reduce((acc, l) => acc + l.amount, 0);
-
-    // Active Portfolio: Remaining balance of Released or Overdue loans
-    const portfolio = MOCK_LOANS
-      .filter(l => l.status === 2)
-      .reduce((acc, l) => acc + l.remaining_balance, 0);
-
-    const repaid = MOCK_PAYMENTS.reduce((acc, p) => acc + p.payment_amount, 0);
-    
-    // Overdue: Released loans where due_date < today
-    const today = new Date().toISOString().split('T')[0];
-    const overdueLoans = MOCK_LOANS.filter(l => l.status === 2 && l.due_date < today);
-    const overdueAmount = overdueLoans.reduce((acc, l) => acc + l.remaining_balance, 0);
-
-    return {
-      totalDisbursed: disbursed,
-      activePortfolio: portfolio,
-      totalRepaid: repaid,
-      overdueCount: overdueLoans.length,
-      overdueAmount,
-    };
-  }, []);
-
   const chartData = useMemo(() => {
     const statusLabels: Record<number, string> = {
       0: 'Request',
@@ -77,64 +48,14 @@ export default function AdminDashboardClient() {
   const COLORS = ['#94a3b8', '#3b82f6', '#10b981', '#6366f1', '#ef4444'];
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">BlueOak Financial Overview</h1>
-        <p className="text-muted-foreground italic">Portfolio summary as of {format(new Date(), 'PPP')}</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Disbursed</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalDisbursed)}</div>
-            <p className="text-xs text-muted-foreground">Released principal</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-emerald-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Portfolio</CardTitle>
-            <Wallet className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.activePortfolio)}</div>
-            <p className="text-xs text-muted-foreground">Current outstanding balance</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-red-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue Value</CardTitle>
-            <AlertCircle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.overdueAmount)}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.overdueCount} accounts past due
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-amber-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Collections</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRepaid)}</div>
-            <p className="text-xs text-muted-foreground">Total payments received</p>
-          </CardContent>
-        </Card>
-      </div>
-
+    <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Portfolio Distribution</CardTitle>
             <CardDescription>Number of loans by their current processing status.</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
@@ -159,8 +80,8 @@ export default function AdminDashboardClient() {
             <CardDescription>Recent collection activity.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-5">
-              {MOCK_PAYMENTS.slice(0, 5).map((payment) => (
+            <div className="space-y-6">
+              {MOCK_PAYMENTS.slice(0, 8).map((payment) => (
                 <div key={payment.payment_id} className="flex items-center justify-between group">
                   <div className="grid gap-0.5">
                     <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">{payment.loan_id}</p>

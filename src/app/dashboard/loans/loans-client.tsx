@@ -1,10 +1,9 @@
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar, HandCoins, Info, Calculator, CreditCard } from 'lucide-react';
+import { PlusCircle, CreditCard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,8 +24,8 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { MOCK_LOANS, MOCK_BORROWERS, MOCK_LOAN_TYPES, MOCK_LOAN_PLANS, MOCK_PAYMENTS } from '@/lib/mock-data';
-import type { Loan, LoanStatus, PaymentFrequency, Payment } from '@/lib/types';
+import { MOCK_LOANS, MOCK_BORROWERS, MOCK_LOAN_PLANS } from '@/lib/mock-data';
+import type { Loan, LoanStatus, PaymentFrequency } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
 
@@ -241,30 +240,20 @@ export default function LoansClient() {
     }, 600);
   };
 
+  const CustomToolbarActions = (
+    <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 h-8">
+      <PlusCircle className="mr-2 h-4 w-4" /> New Request
+    </Button>
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg shadow-sm">
-            <HandCoins className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Active Loans</h1>
-            <p className="text-muted-foreground">Monitor portfolio status and collect repayments.</p>
-          </div>
-        </div>
-        <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-          <PlusCircle className="mr-2 h-4 w-4" /> New Request
-        </Button>
-      </div>
-
       <Card className="border-none shadow-sm">
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={loans} initialPageSize={10} />
+          <DataTable columns={columns} data={loans} initialPageSize={10} customActions={CustomToolbarActions} />
         </CardContent>
       </Card>
 
-      {/* New Loan Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -323,7 +312,6 @@ export default function LoansClient() {
         </DialogContent>
       </Dialog>
 
-      {/* Payment Modal */}
       <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>

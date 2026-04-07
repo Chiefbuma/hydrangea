@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -8,7 +7,6 @@ import {
   CardContent, 
   CardHeader, 
   CardTitle, 
-  CardDescription 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -19,8 +17,6 @@ import {
   MapPin, 
   HandCoins, 
   History,
-  TrendingDown,
-  CalendarCheck
 } from 'lucide-react';
 import { MOCK_BORROWERS, MOCK_LOANS, MOCK_PAYMENTS } from '@/lib/mock-data';
 import { format } from 'date-fns';
@@ -36,15 +32,6 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
   const borrower = useMemo(() => MOCK_BORROWERS.find(b => b.borrower_id === id), [id]);
   const loans = useMemo(() => MOCK_LOANS.filter(l => l.borrower_id === id), [id]);
   const payments = useMemo(() => MOCK_PAYMENTS.filter(p => p.borrower_id === id), [id]);
-
-  const summary = useMemo(() => {
-    const totalBorrowed = loans.reduce((acc, l) => acc + l.amount, 0);
-    const totalPayable = loans.reduce((acc, l) => acc + l.total_loan, 0);
-    const totalPaid = payments.reduce((acc, p) => acc + p.payment_amount, 0);
-    const balance = totalPayable - totalPaid;
-
-    return { totalBorrowed, totalPayable, totalPaid, balance };
-  }, [loans, payments]);
 
   const loanColumns: ColumnDef<Loan>[] = [
     {
@@ -104,8 +91,8 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-blue-900">{borrower.name}</h1>
-          <p className="text-muted-foreground flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-blue-900">{borrower.name}</h1>
+          <p className="text-muted-foreground flex items-center gap-2 text-sm">
             <CreditCard className="h-3 w-3" /> ID: {borrower.national_id}
           </p>
         </div>
@@ -144,33 +131,9 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         </Card>
 
         <div className="lg:col-span-3 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-blue-50 border-blue-100 dark:bg-blue-900/10">
-              <CardContent className="pt-6">
-                <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Total Loaned</p>
-                <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">{formatCurrency(summary.totalBorrowed)}</h3>
-                <p className="text-[10px] text-blue-600 mt-2">Principal Amount</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-emerald-50 border-emerald-100 dark:bg-emerald-900/10">
-              <CardContent className="pt-6">
-                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Total Repaid</p>
-                <h3 className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{formatCurrency(summary.totalPaid)}</h3>
-                <p className="text-[10px] text-emerald-600 mt-2">Confirmed Payments</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-red-50 border-red-100 dark:bg-red-900/10">
-              <CardContent className="pt-6">
-                <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-1">Outstanding</p>
-                <h3 className="text-2xl font-bold text-red-900 dark:text-red-100">{formatCurrency(summary.balance)}</h3>
-                <p className="text-[10px] text-red-600 mt-2">Remaining Debt</p>
-              </CardContent>
-            </Card>
-          </div>
-
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <HandCoins className="h-5 w-5 text-blue-600" />
                 Loan History
               </CardTitle>
@@ -182,7 +145,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <History className="h-5 w-5 text-emerald-600" />
                 Payment Record
               </CardTitle>
