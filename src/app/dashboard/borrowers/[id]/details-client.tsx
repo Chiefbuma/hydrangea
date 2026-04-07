@@ -41,13 +41,13 @@ const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', {
 }).format(val);
 
 const DetailItem = ({ label, value, icon: Icon }: { label: string; value: string; icon: any }) => (
-  <div className="flex items-start gap-3 py-1.5">
-    <div className="bg-slate-100 p-1.5 rounded-full shrink-0">
-      <Icon className="h-3.5 w-3.5 text-slate-600" />
+  <div className="flex items-start gap-3 py-2">
+    <div className="bg-slate-100 p-2 rounded-full shrink-0">
+      <Icon className="h-4 w-4 text-slate-600" />
     </div>
-    <div className="grid gap-0">
-      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-tight">{label}</p>
-      <p className="text-xs font-medium leading-tight">{value || 'N/A'}</p>
+    <div className="grid gap-0.5">
+      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">{label}</p>
+      <p className="text-sm font-semibold leading-tight">{value || 'N/A'}</p>
     </div>
   </div>
 );
@@ -99,7 +99,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         const s = row.original.status;
         const variants: any = { 0: 'secondary', 1: 'default', 2: 'outline', 3: 'secondary', 4: 'destructive' };
         const labels: any = { 0: 'Req', 1: 'Conf', 2: 'Rel', 3: 'Comp', 4: 'Den' };
-        return <Badge variant={variants[s]} className="text-[9px] py-0 h-4">{labels[s]}</Badge>;
+        return <Badge variant={variants[s]} className="text-[10px] py-0 h-5">{labels[s]}</Badge>;
       }
     },
     {
@@ -113,17 +113,17 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     {
       accessorKey: 'payment_id',
       header: 'Receipt',
-      cell: ({ row }) => <span className="font-mono text-[9px]">{row.original.payment_id}</span>
+      cell: ({ row }) => <span className="font-mono text-[10px]">{row.original.payment_id}</span>
     },
     {
       accessorKey: 'payment_amount',
       header: 'Paid',
-      cell: ({ row }) => <span className="text-emerald-600 font-bold text-[10px]">+{formatCurrency(row.original.payment_amount)}</span>
+      cell: ({ row }) => <span className="text-emerald-600 font-bold text-xs">+{formatCurrency(row.original.payment_amount)}</span>
     },
     {
       accessorKey: 'payment_date',
       header: 'Date',
-      cell: ({ row }) => <span className="text-[9px]">{format(new Date(row.original.payment_date), 'MMM dd, yy')}</span>
+      cell: ({ row }) => <span className="text-xs">{format(new Date(row.original.payment_date), 'MMM dd, yyyy')}</span>
     }
   ];
 
@@ -148,38 +148,38 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
     <motion.div 
       initial={{ opacity: 0, y: 10 }} 
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-6"
     >
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => router.back()} className="h-7 w-7">
+        <Button variant="outline" size="icon" onClick={() => router.back()} className="h-8 w-8">
           <ArrowLeft className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
-          <Card className="border shadow-none h-full bg-white dark:bg-slate-900 overflow-hidden">
-            <CardHeader className="flex flex-col items-center pb-2 text-center border-b border-dashed p-4">
-               <Avatar className="w-16 h-16 border-2 border-slate-50 shadow-sm mb-2">
-                  <AvatarFallback className="text-xl bg-blue-50 text-blue-700 font-bold">
+          <Card className="border shadow-lg h-full bg-white dark:bg-slate-900 overflow-hidden">
+            <CardHeader className="flex flex-col items-center pb-4 text-center border-b border-dashed p-6">
+               <Avatar className="w-24 h-24 border-4 border-slate-50 shadow-md mb-4">
+                  <AvatarFallback className="text-2xl bg-blue-50 text-blue-700 font-bold">
                     {borrower.name.substring(0, 1)}
                   </AvatarFallback>
                </Avatar>
-               <div className="space-y-0.5">
-                  <CardTitle className="text-lg font-bold tracking-tight">{borrower.name}</CardTitle>
-                  <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                    <CreditCard className="h-3 w-3" />
-                    <span className="text-[9px] font-bold uppercase">ID: {borrower.national_id}</span>
+               <div className="space-y-1">
+                  <CardTitle className="text-xl font-bold tracking-tight">{borrower.name}</CardTitle>
+                  <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
+                    <CreditCard className="h-4 w-4" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">ID: {borrower.national_id}</span>
                   </div>
                </div>
             </CardHeader>
-            <CardContent className="p-4 space-y-4">
-               <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded-lg border border-blue-100 dark:border-blue-900/20 text-center">
-                  <p className="text-[9px] uppercase font-bold text-blue-600 dark:text-blue-400 mb-0.5">Portfolio Balance</p>
-                  <p className="text-lg font-black text-blue-900 dark:text-blue-100">{formatCurrency(totalBalance)}</p>
+            <CardContent className="p-6 space-y-6">
+               <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/20 text-center">
+                  <p className="text-[10px] uppercase font-black text-blue-600 dark:text-blue-400 mb-1">Portfolio Balance</p>
+                  <p className="text-2xl font-black text-blue-900 dark:text-blue-100">{formatCurrency(totalBalance)}</p>
                </div>
 
-               <div className="space-y-0.5">
+               <div className="space-y-1">
                   <DetailItem icon={Phone} label="Contact" value={borrower.contact_no} />
                   <DetailItem icon={Mail} label="Email" value={borrower.email || 'N/A'} />
                   <DetailItem icon={MapPin} label="Address" value={borrower.address || 'N/A'} />
@@ -190,7 +190,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
 
         <div className="lg:col-span-3">
           <Card className="shadow-none border h-full">
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <DataTable 
                 columns={loanColumns} 
                 data={loans} 
@@ -203,31 +203,31 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       </div>
 
       <Dialog open={isLoanModalOpen} onOpenChange={setIsLoanModalOpen}>
-        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden">
-          <DialogHeader className="p-3 bg-slate-50/50 border-b">
-            <DialogTitle className="text-blue-900 flex items-center gap-1.5 text-xs font-bold">
-               <Wallet className="h-3 w-3 text-blue-600" />
-               Loan: {selectedLoan?.loan_id}
+        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
+          <DialogHeader className="p-6 bg-slate-50/50 border-b">
+            <DialogTitle className="text-blue-900 flex items-center gap-2 text-lg font-bold">
+               <Wallet className="h-5 w-5 text-blue-600" />
+               Loan Detail: {selectedLoan?.loan_id}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="p-3 space-y-3">
-            <div className="grid grid-cols-3 gap-2 py-2 border-b border-dashed">
-                <div className="space-y-0.5">
-                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Principal</p>
-                    <p className="text-[10px] font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-3 gap-4 pb-6 border-b border-dashed">
+                <div className="space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Original Principal</p>
+                    <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.amount) : '-'}</p>
                 </div>
-                <div className="space-y-0.5">
-                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Payable</p>
-                    <p className="text-[10px] font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
+                <div className="space-y-1">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Repayable</p>
+                    <p className="text-sm font-bold">{selectedLoan ? formatCurrency(selectedLoan.total_loan) : '-'}</p>
                 </div>
-                <div className="space-y-0.5 text-right">
-                    <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-tight">Date</p>
-                    <p className="text-[10px] font-bold">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yy') : '-'}</p>
+                <div className="space-y-1 text-right">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Release Date</p>
+                    <p className="text-sm font-bold">{selectedLoan ? format(new Date(selectedLoan.date_released), 'MMM dd, yyyy') : '-'}</p>
                 </div>
             </div>
 
-            <div className="rounded-md border border-slate-100 overflow-hidden">
+            <div className="rounded-lg border border-slate-100 overflow-hidden">
                 <DataTable 
                     columns={repaymentColumns} 
                     data={selectedLoanPayments} 
@@ -235,24 +235,27 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                 />
             </div>
 
-            <div className="pt-2 border-t flex items-end justify-between">
-                <div className="flex flex-col gap-1 text-left">
-                    <div className="flex flex-col">
-                        <p className="text-[9px] uppercase font-bold text-emerald-600 leading-none">Total Paid</p>
-                        <p className="text-base font-black text-emerald-700 leading-none">{formatCurrency(selectedLoanTotalPaid)}</p>
+            <div className="pt-6 border-t flex items-end justify-between">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 flex-1">
+                    <div className="space-y-1">
+                        <p className="text-[10px] uppercase font-black text-emerald-600">Total Paid</p>
+                        <p className="text-lg font-black text-emerald-700">{formatCurrency(selectedLoanTotalPaid)}</p>
                     </div>
-                    <div className="flex flex-col">
-                        <p className="text-[9px] uppercase font-bold text-blue-600 leading-none">Remaining</p>
-                        <p className="text-base font-black text-blue-800 leading-none">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
+                    <div className="space-y-1">
+                        <p className="text-[10px] uppercase font-black text-blue-600">Remaining Balance</p>
+                        <p className="text-lg font-black text-blue-800">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</p>
                     </div>
-                    <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground">
-                        <CalendarDays className="h-2 w-2" />
-                        <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yy') : '-'}</span>
+                    <div className="space-y-1">
+                        <p className="text-[10px] uppercase font-black text-muted-foreground">Maturity Status</p>
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                            <CalendarDays className="h-3.5 w-3.5" />
+                            <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
+                        </div>
                     </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
+                <div className="flex flex-col items-end gap-3">
                    {selectedLoan && (
-                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-1.5 py-0 text-[8px] font-black h-4 uppercase">
+                      <Badge variant={selectedLoan.status === 3 ? 'secondary' : 'default'} className="px-3 py-1 text-[10px] font-black uppercase">
                         {selectedLoan.status === 3 ? 'COMPLETED' : 'ACTIVE'}
                       </Badge>
                    )}
