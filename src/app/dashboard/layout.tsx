@@ -1,3 +1,4 @@
+
 'use client';
 
 import type React from 'react';
@@ -6,15 +7,24 @@ import { useEffect, useState } from 'react';
 import Header from '@/components/header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Truck, LayoutDashboard, Settings, Loader2, PlusCircle } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Users, 
+  HandCoins, 
+  Receipt, 
+  Settings, 
+  Loader2, 
+  PlusCircle 
+} from 'lucide-react';
 import type { User as AppUser } from '@/lib/types';
 import Logo from '@/components/logo';
 import { getCurrentUser } from '@/services/api-service';
-import CreateTransactionDialog from '@/components/create-transaction-dialog';
 
 const navLinks = [
-  { href: '/dashboard/admin', label: 'Admin Dashboard', icon: LayoutDashboard, admin: true },
-  { href: '/dashboard/ambulances', label: 'Fleet', icon: Truck, admin: false },
+  { href: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard, admin: false },
+  { href: '/dashboard/borrowers', label: 'Borrowers', icon: Users, admin: false },
+  { href: '/dashboard/loans', label: 'Loans', icon: HandCoins, admin: false },
+  { href: '/dashboard/payments', label: 'Payments', icon: Receipt, admin: false },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, admin: true },
 ]
 
@@ -44,9 +54,8 @@ export default function DashboardLayout({
     loadUser();
   }, [router]);
 
-
-  const renderNavLinks = (links: typeof navLinks) => {
-    return links.map(link => {
+  const renderNavLinks = () => {
+    return navLinks.map(link => {
         if (!user || (link.admin && user.role !== 'admin')) return null;
         const isActive = pathname.startsWith(link.href);
         return (
@@ -76,27 +85,18 @@ export default function DashboardLayout({
             <Logo className="h-8 w-auto" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
-             <CreateTransactionDialog
-               title="Create New Transaction"
-               description="Create a transaction and assign it to the correct bus or ambulance."
-               onSuccess={(vehicleId) => {
-                 const targetPath = `/dashboard/ambulance/${vehicleId}`;
-                 window.dispatchEvent(new CustomEvent('transaction:created', { detail: { ambulanceId: vehicleId } }));
-                 if (pathname !== targetPath) {
-                   router.push(targetPath);
-                 } else {
-                   router.refresh();
-                 }
-               }}
-               trigger={(
-                 <Button size="sm">
-                   <PlusCircle className="mr-0 h-4 w-4 sm:mr-2" />
-                   <span className="hidden sm:inline">New Transaction</span>
-                 </Button>
-               )}
-             />
-             {renderNavLinks(navLinks)}
-            <Header user={user} />
+             <div className="hidden md:flex items-center gap-2">
+                {renderNavLinks()}
+             </div>
+             <div className="flex items-center gap-2">
+                <Button size="sm" asChild variant="outline" className="hidden sm:flex">
+                  <Link href="/dashboard/loans/new">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    New Loan
+                  </Link>
+                </Button>
+                <Header user={user} />
+             </div>
           </div>
         </div>
       </header>

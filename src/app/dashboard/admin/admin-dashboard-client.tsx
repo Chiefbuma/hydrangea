@@ -1,398 +1,193 @@
+
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Transaction, Ambulance, AdminDashboardData, AmbulancePerformanceData } from '@/lib/types';
-import { getTransactions, getAmbulances } from '@/services/api-service';
+import { useMemo } from 'react';
+import { useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { Calendar as CalendarIcon, Loader2, Download } from 'lucide-react';
-import { format, startOfMonth, isWithinInterval, startOfDay, endOfDay, subMonths } from 'date-fns';
-import ReactCalendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import { cn } from '@/lib/utils';
-import { DataTable } from '@/components/ui/data-table';
-import { columns } from './columns';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { RadialBar, RadialBarChart } from 'recharts';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { exportSummaryToExcel, exportDetailedToExcel } from '@/lib/excel-export';
+import { Loader2, TrendingUp, Wallet, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { format } from 'date-fns';
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell,
+} from 'recharts';
+import type { Loan, Payment } from '@/lib/types';
 
-const formatCurrency = (value: number | null | undefined) => {
-    if (value === null || value === undefined) return '-';
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KES', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'KES',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
 };
 
 export default function AdminDashboardClient() {
-    const [transactions, setTransactions] = useState<Transaction[] | null>(null);
-    const [ambulances, setAmbulances] = useState<Ambulance[] | null>(null);
+  const db = useFirestore();
+  const { data: loans, loading: loansLoading } = useCollection<Loan>(
+    db ? collection(db, 'loans') : null
+  );
+  const { data: payments, loading: paymentsLoading } = useCollection<Payment>(
+    db ? collection(db, 'payments') : null
+  );
 
-    const today = useMemo(() => new Date(), []);
-    const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-        from: startOfMonth(today),
-        to: today,
-    });
+  const stats = useMemo(() => {
+    if (!loans || !payments) return null;
+
+    const disbursed = loans
+      .filter(l => ['disbursed', 'active', 'overdue', 'completed'].includes(l.status))
+      .reduce((acc, l) => acc + l.principalAmount, 0);
+
+    const portfolio = loans
+      .filter(l => ['active', 'overdue'].includes(l.status))
+      .reduce((acc, l) => acc + l.remainingBalance, 0);
+
+    const repaid = payments.reduce((acc, p) => acc + p.amount, 0);
     
-    const [tempStartDate, setTempStartDate] = useState<Date>(dateRange.from);
-    const [tempEndDate, setTempEndDate] = useState<Date>(dateRange.to);
+    const overdueLoans = loans.filter(l => l.status === 'overdue');
+    const overdueAmount = overdueLoans.reduce((acc, l) => acc + l.remainingBalance, 0);
 
-    const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
-    const [previousMonthData, setPreviousMonthData] = useState<AdminDashboardData | null>(null);
-    const [loading, setLoading] = useState(true);
-    
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                setLoading(true);
-                const [transactionsData, ambulancesData] = await Promise.all([
-                getTransactions(),
-                getAmbulances(),
-                ]);
-                setTransactions(transactionsData);
-                setAmbulances(ambulancesData);
-            } catch (error) {
-                console.error("Failed to load dashboard data", error);
-                setTransactions([]);
-                setAmbulances([]);
-            }
-        }
-        fetchData();
-    }, []);
+    return {
+      totalDisbursed: disbursed,
+      activePortfolio: portfolio,
+      totalRepaid: repaid,
+      overdueCount: overdueLoans.length,
+      overdueAmount,
+    };
+  }, [loans, payments]);
 
-    const currentMonthRange = useMemo(() => {
-        return {
-            from: startOfMonth(today),
-            to: today,
-        };
-    }, [today]);
-    
-    const previousMonthRange = useMemo(() => {
-        const previousMonth = subMonths(today, 1);
-        const dayOfMonth = today.getDate();
-        const daysInPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0).getDate();
-        
-        return {
-            from: startOfMonth(previousMonth),
-            to: new Date(previousMonth.getFullYear(), previousMonth.getMonth(), Math.min(dayOfMonth, daysInPreviousMonth)),
-        };
-    }, [today]);
+  const chartData = useMemo(() => {
+    if (!loans) return [];
+    const statusCounts = loans.reduce((acc: any, loan) => {
+      acc[loan.status] = (acc[loan.status] || 0) + 1;
+      return acc;
+    }, {});
 
-    const calculateDashboardData = useMemo(() => {
-        return (transactions: Transaction[], ambulances: Ambulance[], range: { from: Date, to: Date }): AdminDashboardData => {
-            const filteredTransactions = transactions.filter(t => {
-                try {
-                    const txDate = typeof t.date === 'string' ? new Date(t.date) : t.date;
-                    return isWithinInterval(txDate, { start: startOfDay(range.from), end: endOfDay(range.to) });
-                } catch (e) {
-                    return false;
-                }
-            });
-            
-            const summary = filteredTransactions.reduce((acc, t) => {
-                acc.total_target += t.target || 0;
-                acc.total_net_banked += t.net_banked || 0;
-                acc.total_till += t.total_till || 0;
-                acc.total_deficit += t.deficit || 0;
-                acc.total_cash_deposited += t.cash_deposited_by_staff || 0;
-                return acc;
-            }, { total_target: 0, total_net_banked: 0, total_till: 0, total_deficit: 0, total_cash_deposited: 0 });
+    return Object.entries(statusCounts).map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value,
+    }));
+  }, [loans]);
 
-            const overall_performance = summary.total_target > 0 ? Math.min(100, (summary.total_net_banked / summary.total_target) * 100) : 0;
-            
-            const ambulancePerformanceMap = new Map<number, { trans: Transaction[], count: number }>();
-            filteredTransactions.forEach(t => {
-                if (!ambulancePerformanceMap.has(t.ambulance.id)) {
-                    ambulancePerformanceMap.set(t.ambulance.id, { trans: [], count: 0 });
-                }
-                const entry = ambulancePerformanceMap.get(t.ambulance.id)!;
-                entry.trans.push(t);
-                entry.count++;
-            });
-
-            const ambulance_performance: AmbulancePerformanceData[] = Array.from(ambulancePerformanceMap.entries()).map(([ambulanceId, data]) => {
-                const ambulance = ambulances.find(a => a.id === ambulanceId);
-                const totals = data.trans.reduce((acc, t) => {
-                    acc.total_target += t.target || 0;
-                    acc.total_net_banked += t.net_banked || 0;
-                    acc.total_till += t.total_till || 0;
-                    acc.total_cash_deposited += t.cash_deposited_by_staff || 0;
-                    return acc;
-                }, { total_target: 0, total_net_banked: 0, total_till: 0, total_cash_deposited: 0 });
-
-                const total_deficit = totals.total_target - totals.total_net_banked;
-                const performance = totals.total_target > 0 ? (totals.total_net_banked / totals.total_target) : 0;
-
-                return {
-                    ambulanceId,
-                    vehicle_type: ambulance?.vehicle_type ?? 'ambulance',
-                    reg_no: ambulance?.reg_no ?? `Unknown (${ambulanceId})`,
-                    total_target: totals.total_target,
-                    total_net_banked: totals.total_net_banked,
-                    total_till: totals.total_till,
-                    total_cash_deposited: totals.total_cash_deposited,
-                    total_deficit,
-                    performance,
-                };
-            }).sort((a, b) => b.total_net_banked - a.total_net_banked);
-
-            return {
-                ...summary,
-                overall_performance,
-                ambulance_performance,
-            };
-        };
-    }, []);
-    
-    const filteredDashboardData = useMemo(() => {
-        if (!transactions || !ambulances) return null;
-        return calculateDashboardData(transactions, ambulances, dateRange);
-    }, [transactions, ambulances, dateRange, calculateDashboardData]);
-
-    const filteredTransactions = useMemo(() => {
-        if (!transactions) return [];
-        return transactions.filter(t => {
-            try {
-                const txDate = typeof t.date === 'string' ? new Date(t.date) : t.date;
-                return isWithinInterval(txDate, { start: startOfDay(dateRange.from), end: endOfDay(dateRange.to) });
-            } catch (e) {
-                return false;
-            }
-        });
-    }, [transactions, dateRange]);
-
-    useEffect(() => {
-        if (!transactions || !ambulances) return;
-
-        setLoading(true);
-        const currentData = calculateDashboardData(transactions, ambulances, currentMonthRange);
-        const previousData = calculateDashboardData(transactions, ambulances, previousMonthRange);
-        setDashboardData(currentData);
-        setPreviousMonthData(previousData);
-        setLoading(false);
-    }, [transactions, ambulances, calculateDashboardData, currentMonthRange, previousMonthRange]);
-
-    const handleStartDateChange = (date: Date | undefined) => {
-        if (date) {
-            setTempStartDate(date);
-        }
-    }
-    
-    const handleEndDateChange = (date: Date | undefined) => {
-        if (date) {
-            setTempEndDate(date);
-        }
-    }
-    
-    const handleApplyStartDate = () => {
-        setDateRange(prev => ({ ...prev, from: tempStartDate }));
-    }
-    
-    const handleApplyEndDate = () => {
-        setDateRange(prev => ({ ...prev, to: tempEndDate }));
-    }
-    
-    if (loading || !dashboardData || !filteredDashboardData) {
-        return <div className="flex h-96 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-    }
-
+  if (loansLoading || paymentsLoading) {
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 className="text-3xl font-bold font-headline tracking-tight">Admin Dashboard</h1>
-                    <p className="text-muted-foreground">High-level overview of Hydrangea fleet performance.</p>
-                </div>
-                <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-end sm:gap-4">
-                    <div className="grid w-full gap-2 sm:w-auto">
-                        <Label htmlFor="start-date">Start Date</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    id="start-date"
-                                    variant={"outline"}
-                                    className={cn("w-full justify-start text-left font-normal sm:w-[180px]")}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dateRange.from ? format(dateRange.from, "LLL dd, y") : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <div className="p-3 space-y-2">
-                                    <ReactCalendar
-                                        onChange={(date) => handleStartDateChange(date as Date)}
-                                        value={tempStartDate}
-                                        maxDate={tempEndDate}
-                                        className="text-xs border-none"
-                                    />
-                                    <Button onClick={handleApplyStartDate} className="w-full text-xs h-8">Set Start Date</Button>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                    <div className="grid w-full gap-2 sm:w-auto">
-                        <Label htmlFor="end-date">End Date</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    id="end-date"
-                                    variant={"outline"}
-                                    className={cn("w-full justify-start text-left font-normal sm:w-[180px]")}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dateRange.to ? format(dateRange.to, "LLL dd, y") : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <div className="p-3 space-y-2">
-                                    <ReactCalendar
-                                        onChange={(date) => handleEndDateChange(date as Date)}
-                                        value={tempEndDate}
-                                        minDate={tempStartDate}
-                                        className="text-xs border-none"
-                                    />
-                                    <Button onClick={handleApplyEndDate} className="w-full text-xs h-8">Set End Date</Button>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                </div>
-            </div>
-
-                
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Card className="lg:col-span-1">
-                        <CardHeader>
-                            <CardTitle>Overall Performance</CardTitle>
-                            <CardDescription>
-                                Net Banked vs Target for {format(dateRange.from, "LLL d")} - {format(dateRange.to, "LLL d, y")}.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex items-center justify-center">
-                            <ChartContainer
-                                config={{ performance: { label: "Performance", color: "hsl(var(--primary))" } }}
-                                className="mx-auto aspect-square h-[250px]"
-                            >
-                                <RadialBarChart
-                                    data={[{ name: "performance", value: filteredDashboardData.overall_performance }]}
-                                    startAngle={-140}
-                                    endAngle={130}
-                                    innerRadius="70%"
-                                    outerRadius="100%"
-                                    barSize={20}
-                                >
-                                    <RadialBar
-                                        dataKey="value"
-                                        background
-                                        cornerRadius={10}
-                                        className="fill-primary"
-                                    />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={
-                                            <ChartTooltipContent
-                                                hideLabel
-                                                formatter={(value) => `${Number(value).toFixed(0)}%`}
-                                            />
-                                        }
-                                    />
-                                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-4xl font-bold">
-                                        {(filteredDashboardData.overall_performance).toFixed(0)}%
-                                    </text>
-                                    <text x="50%" y="65%" textAnchor="middle" dominantBaseline="middle" className="fill-muted-foreground text-sm">
-                                        Performance
-                                    </text>
-                                </RadialBarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>Key Metrics Comparison</CardTitle>
-                            <CardDescription>
-                                {format(currentMonthRange.from, "MMM")}({format(currentMonthRange.from, "d")}-{format(currentMonthRange.to, "d")}) vs {format(previousMonthRange.from, "MMM")}({format(previousMonthRange.from, "d")}-{format(previousMonthRange.to, "d")})
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                           <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Metric</TableHead>
-                                            <TableHead className="text-right">{format(currentMonthRange.from, "MMM")}({format(currentMonthRange.from, "d")}-{format(currentMonthRange.to, "d")})</TableHead>
-                                            <TableHead className="text-right">{format(previousMonthRange.from, "MMM")}({format(previousMonthRange.from, "d")}-{format(previousMonthRange.to, "d")})</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Cash Deposited</TableCell>
-                                            <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_cash_deposited)}</TableCell>
-                                            <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_cash_deposited)}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Total Till</TableCell>
-                                            <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_till)}</TableCell>
-                                            <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_till)}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Net Banked</TableCell>
-                                            <TableCell className="text-right font-semibold">{formatCurrency(dashboardData.total_net_banked)}</TableCell>
-                                            <TableCell className="text-right font-semibold">{formatCurrency(previousMonthData?.total_net_banked)}</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell className="font-medium">Deficit</TableCell>
-                                            <TableCell className="text-right text-red-500 font-semibold">{formatCurrency(dashboardData.total_deficit)}</TableCell>
-                                            <TableCell className="text-right text-red-500 font-semibold">{formatCurrency(previousMonthData?.total_deficit)}</TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                           </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-            {filteredDashboardData && (
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                            <div>
-                                <CardTitle>Fleet Performance Analysis</CardTitle>
-                                <CardDescription>
-                                    Period: {format(dateRange.from, "MMMM d, yyyy")} - {format(dateRange.to, "MMMM d, yyyy")}
-                                </CardDescription>
-                            </div>
-                            <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                        const periodLabel = `${format(dateRange.from, "MMMM d, yyyy")} - ${format(dateRange.to, "MMMM d, yyyy")}`;
-                                        exportDetailedToExcel(filteredTransactions, periodLabel);
-                                    }}
-                                >
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Export Details
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                        const periodLabel = `${format(dateRange.from, "MMMM d, yyyy")} - ${format(dateRange.to, "MMMM d, yyyy")}`;
-                                        exportSummaryToExcel(filteredDashboardData.ambulance_performance, periodLabel);
-                                    }}
-                                >
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Export Summary
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <DataTable columns={columns} data={filteredDashboardData.ambulance_performance.map((item, index) => ({ ...item, id: index }))} />
-                    </CardContent>
-                </Card>
-            )}
-        </div>
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
+  }
+
+  if (!stats) return null;
+
+  const COLORS = ['#0284c7', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">Financial Overview</h1>
+        <p className="text-muted-foreground">Real-time status of your loan portfolio.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Disbursed</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalDisbursed)}</div>
+            <p className="text-xs text-muted-foreground">Cumulative disbursements</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Portfolio</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.activePortfolio)}</div>
+            <p className="text-xs text-muted-foreground">Current outstanding balance</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Overdue Accounts</CardTitle>
+            <AlertCircle className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.overdueCount}</div>
+            <p className="text-xs text-muted-foreground">
+              {formatCurrency(stats.overdueAmount)} in risk
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Repaid</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalRepaid)}</div>
+            <p className="text-xs text-muted-foreground">Total payments received</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Loan Distribution by Status</CardTitle>
+            <CardDescription>Visual breakdown of current loan stages.</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip 
+                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle>Recent Payments</CardTitle>
+            <CardDescription>Latest 5 transactions.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {payments?.slice(0, 5).map((payment) => (
+                <div key={payment.id} className="flex items-center justify-between border-b pb-2 last:border-0">
+                  <div className="grid gap-0.5">
+                    <p className="text-sm font-medium">Loan #{payment.loanId.slice(-4)}</p>
+                    <p className="text-xs text-muted-foreground">{format(new Date(payment.paymentDate), 'MMM dd, yyyy')}</p>
+                  </div>
+                  <div className="text-sm font-bold text-emerald-600">
+                    +{formatCurrency(payment.amount)}
+                  </div>
+                </div>
+              ))}
+              {(!payments || payments.length === 0) && (
+                <p className="text-sm text-muted-foreground text-center py-4">No payments found.</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 }

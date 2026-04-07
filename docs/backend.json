@@ -1,0 +1,73 @@
+
+{
+  "entities": {
+    "Borrower": {
+      "title": "Borrower",
+      "description": "Information about the individual borrowing money.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Full name of the borrower" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "idNumber": { "type": "string", "description": "National ID or Passport number" },
+        "address": { "type": "string", "description": "Physical address" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "idNumber"]
+    },
+    "Loan": {
+      "title": "Loan",
+      "description": "Details of a specific loan application and its status.",
+      "type": "object",
+      "properties": {
+        "borrowerId": { "type": "string", "description": "Reference to the Borrower" },
+        "borrowerName": { "type": "string", "description": "Cached name of the borrower" },
+        "principalAmount": { "type": "number", "description": "The initial amount loaned" },
+        "interestRate": { "type": "number", "description": "Annual interest rate percentage" },
+        "termMonths": { "type": "integer", "description": "Loan duration in months" },
+        "totalRepayable": { "type": "number", "description": "Principal plus calculated interest" },
+        "remainingBalance": { "type": "number", "description": "Current outstanding balance" },
+        "status": { 
+          "type": "string", 
+          "enum": ["pending", "approved", "disbursed", "active", "overdue", "completed", "rejected"],
+          "description": "Current state of the loan" 
+        },
+        "startDate": { "type": "string", "format": "date", "description": "When the loan terms begin" },
+        "disbursementDate": { "type": "string", "format": "date", "description": "When funds were released" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["borrowerId", "principalAmount", "interestRate", "termMonths", "status"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "A record of a repayment transaction.",
+      "type": "object",
+      "properties": {
+        "loanId": { "type": "string", "description": "Reference to the Loan" },
+        "borrowerId": { "type": "string", "description": "Reference to the Borrower" },
+        "amount": { "type": "number", "description": "Amount paid" },
+        "paymentDate": { "type": "string", "format": "date", "description": "Date of transaction" },
+        "method": { "type": "string", "enum": ["cash", "bank_transfer", "mobile_money", "check"] },
+        "reference": { "type": "string", "description": "Transaction reference number" }
+      },
+      "required": ["loanId", "amount", "paymentDate", "method"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/borrowers/{borrowerId}": {
+      "schema": "Borrower",
+      "description": "Collection of borrower profiles"
+    },
+    "/loans/{loanId}": {
+      "schema": "Loan",
+      "description": "Collection of loan applications and active loans"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Flat collection of all loan payments for global reporting"
+    }
+  }
+}
