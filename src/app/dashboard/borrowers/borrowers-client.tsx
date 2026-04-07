@@ -2,9 +2,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Phone, CreditCard, UserCheck, MapPin } from 'lucide-react';
+import { PlusCircle, Phone, CreditCard, UserCheck, MapPin, Eye } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ import { ColumnDef } from '@tanstack/react-table';
 
 export default function BorrowersClient() {
   const { toast } = useToast();
+  const router = useRouter();
   const [borrowers, setBorrowers] = useState<Borrower[]>(MOCK_BORROWERS);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,12 +70,18 @@ export default function BorrowersClient() {
       )
     },
     {
-      accessorKey: 'address',
-      header: 'Address',
+      id: 'actions',
+      header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3" />
-          {row.original.address || 'N/A'}
+        <div className="flex justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push(`/dashboard/borrowers/${row.original.borrower_id}`)}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View Profile
+          </Button>
         </div>
       )
     }
@@ -82,7 +90,6 @@ export default function BorrowersClient() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation: Contact and ID must be unique
     const isDuplicateContact = borrowers.some(b => b.contact_no === formData.contact_no);
     const isDuplicateID = borrowers.some(b => b.national_id === formData.national_id);
 
@@ -121,7 +128,7 @@ export default function BorrowersClient() {
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-blue-900 dark:text-blue-100">Borrower Records</h1>
-            <p className="text-muted-foreground">Manage client information and validation.</p>
+            <p className="text-muted-foreground">Manage client profiles and credit history.</p>
           </div>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
