@@ -6,7 +6,6 @@ import {
   Card, 
   CardContent, 
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -82,7 +81,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
   const loanColumns: ColumnDef<Loan>[] = [
     {
       accessorKey: 'loan_id',
-      header: 'ID',
+      header: 'Loan ID',
       cell: ({ row }) => <span className="font-mono font-bold text-primary text-xs">{row.original.loan_id}</span>
     },
     {
@@ -154,7 +153,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <Card className="border shadow-lg h-full overflow-hidden">
             <CardHeader className="flex flex-col items-center pb-4 text-center border-b border-dashed p-6">
@@ -164,7 +163,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                   </AvatarFallback>
                </Avatar>
                <div className="space-y-1">
-                  <CardTitle className="text-xl font-bold tracking-tight">{borrower.name}</CardTitle>
+                  <p className="text-xl font-bold tracking-tight">{borrower.name}</p>
                   <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
                     <CreditCard className="h-4 w-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">ID: {borrower.national_id}</span>
@@ -186,7 +185,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
           </Card>
         </div>
 
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-2">
           <Card className="shadow-none border h-full">
             <CardContent className="p-6">
               <DataTable 
@@ -201,7 +200,7 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
       </div>
 
       <Dialog open={isLoanModalOpen} onOpenChange={setIsLoanModalOpen}>
-        <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-xl bg-background">
+        <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-none shadow-xl bg-background">
           <DialogTitle className="sr-only">Loan Transaction History</DialogTitle>
           <div className="p-6 space-y-4">
             <div className="overflow-hidden">
@@ -212,19 +211,18 @@ export default function BorrowerDetailsClient({ id }: { id: string }) {
                 />
             </div>
 
-            <div className="pt-4 flex flex-col gap-1 items-start">
+            <div className="pt-2 flex flex-col gap-1 items-start">
                 <div className="flex items-center gap-2">
-                    <span className="text-[8px] uppercase font-black text-muted-foreground">Total Paid:</span>
-                    <span className="text-[9px] font-black text-emerald-600">{formatCurrency(selectedLoanTotalPaid)}</span>
+                    <span className="text-[9px] uppercase font-black text-muted-foreground">Total Paid:</span>
+                    <span className="text-[10px] font-black text-emerald-600">{formatCurrency(selectedLoanTotalPaid)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-[8px] uppercase font-black text-muted-foreground">Remaining Balance:</span>
-                    <span className="text-[9px] font-black text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
+                    <span className="text-[9px] uppercase font-black text-muted-foreground">Remaining:</span>
+                    <span className="text-[10px] font-black text-primary">{selectedLoan ? formatCurrency(selectedLoan.remaining_balance) : '-'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-[8px] uppercase font-black text-muted-foreground">Maturity Status:</span>
-                    <div className="flex items-center gap-1 text-[8px] font-black text-muted-foreground">
-                        <CalendarDays className="h-2 w-2" />
+                    <div className="flex items-center gap-1 text-[9px] font-black text-muted-foreground uppercase">
+                        <CalendarDays className="h-2.5 w-2.5" />
                         <span>DUE: {selectedLoan ? format(new Date(selectedLoan.due_date), 'MMM dd, yyyy') : '-'}</span>
                     </div>
                 </div>
