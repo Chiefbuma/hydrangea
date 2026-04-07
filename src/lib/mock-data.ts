@@ -1,5 +1,22 @@
 
-import { Borrower, Loan, Payment, LoanType, LoanPlan } from './types';
+import { Borrower, Loan, Payment, LoanType, LoanPlan, User } from './types';
+
+export const MOCK_USERS: User[] = [
+  {
+    id: 1,
+    name: 'System Admin',
+    email: 'admin@blueoak.com',
+    role: 'admin',
+    avatarUrl: 'https://picsum.photos/seed/admin/200'
+  },
+  {
+    id: 2,
+    name: 'Sarah Staff',
+    email: 'sarah@blueoak.com',
+    role: 'staff',
+    avatarUrl: 'https://picsum.photos/seed/sarah/200'
+  }
+];
 
 export const MOCK_BORROWERS: Borrower[] = [
   {
