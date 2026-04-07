@@ -1,10 +1,11 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Phone, CreditCard, Eye } from 'lucide-react';
+import { PlusCircle, Phone, CreditCard, Eye, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,14 +18,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { MOCK_BORROWERS } from '@/lib/mock-data';
+import { getBorrowers, createBorrower } from '@/services/api-service';
 import type { Borrower } from '@/lib/types';
 import { ColumnDef } from '@tanstack/react-table';
 
 export default function BorrowersClient() {
   const { toast } = useToast();
   const router = useRouter();
-  const [borrowers, setBorrowers] = useState<Borrower[]>(MOCK_BORROWERS);
+  const [borrowers, setBorrowers] = useState<Borrower[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,6 +36,22 @@ export default function BorrowersClient() {
     email: '',
     address: ''
   });
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+        const data = await getBorrowers();
+        setBorrowers(data);
+    } catch (err) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch borrowers' });
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const columns: ColumnDef<Borrower>[] = [
     {
@@ -79,43 +97,27 @@ export default function BorrowersClient() {
             onClick={() => router.push(`/dashboard/borrowers/${row.original.borrower_id}`)}
           >
             <Eye className="h-4 w-4 mr-2" />
-            View Profile
+            View
           </Button>
         </div>
       )
     }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const isDuplicateContact = borrowers.some(b => b.contact_no === formData.contact_no);
-    const isDuplicateID = borrowers.some(b => b.national_id === formData.national_id);
-
-    if (isDuplicateContact) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Contact number already exists.' });
-      return;
-    }
-    if (isDuplicateID) {
-      toast({ variant: 'destructive', title: 'Error', description: 'National ID already exists.' });
-      return;
-    }
-
     setIsSubmitting(true);
-
-    setTimeout(() => {
-      const newBorrower: Borrower = {
-        ...formData,
-        borrower_id: `b${Date.now()}`,
-        created_at: new Date().toISOString(),
-      };
-
-      setBorrowers([newBorrower, ...borrowers]);
+    try {
+      await createBorrower(formData);
       toast({ title: 'Success', description: 'Borrower record created.' });
       setIsModalOpen(false);
       setFormData({ name: '', contact_no: '', national_id: '', email: '', address: '' });
+      await fetchData();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
       setIsSubmitting(false);
-    }, 800);
+    }
   };
 
   const CustomToolbarActions = (
@@ -126,16 +128,20 @@ export default function BorrowersClient() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="border-none shadow-sm">
+      <Card className="border shadow-none">
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={borrowers} initialPageSize={10} customActions={CustomToolbarActions} />
+          {loading ? (
+            <div className="flex h-32 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+          ) : (
+            <DataTable columns={columns} data={borrowers} initialPageSize={10} customActions={CustomToolbarActions} />
+          )}
         </CardContent>
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="text-blue-700">Register New Borrower</DialogTitle>
+            <DialogTitle>Register Borrower</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
@@ -153,11 +159,11 @@ export default function BorrowersClient() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Email (Optional)</Label>
+              <Label>Email</Label>
               <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Physical Address</Label>
+              <Label>Address</Label>
               <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
             </div>
             <DialogFooter className="mt-6">
@@ -165,7 +171,8 @@ export default function BorrowersClient() {
                 <Button type="button" variant="ghost">Cancel</Button>
               </DialogClose>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Confirm Registration'}
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Confirm Registration
               </Button>
             </DialogFooter>
           </form>

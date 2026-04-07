@@ -1,133 +1,95 @@
 
 import type { Loan, Borrower, Payment, LoanType, LoanPlan, User } from '@/lib/types';
-import { 
-  MOCK_BORROWERS, 
-  MOCK_LOANS, 
-  MOCK_PAYMENTS, 
-  MOCK_LOAN_TYPES, 
-  MOCK_LOAN_PLANS, 
-  MOCK_USERS 
-} from '@/lib/mock-data';
 
-// --- Auth Functions (Mocked) ---
+const API_BASE = '/api';
 
-export async function login(credentials: {email: string, password: string}): Promise<User> {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const user = MOCK_USERS.find(u => u.email === credentials.email);
-    if (user && credentials.password === 'password') {
-        return user;
-    }
-    throw new Error('Invalid credentials');
+async function handleResponse(response: Response) {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+    throw new Error(error.message || `Request failed with status ${response.status}`);
+  }
+  return response.json();
 }
 
+// --- Auth Functions ---
 export async function getCurrentUser(): Promise<User> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return MOCK_USERS[0]; // Default to admin for mock
+  return handleResponse(await fetch(`${API_BASE}/auth/me`));
 }
 
 export async function logout(): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 200));
+  await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
 }
 
-export async function forgotPassword(data: {email: string}): Promise<{message: string}> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { message: 'If a user with that email exists, a password reset link has been sent.' };
+export async function forgotPassword(data: { email: string }): Promise<{ message: string }> {
+  return handleResponse(await fetch(`${API_BASE}/auth/forgot-password`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }));
 }
 
-
-// --- Borrower Functions (Mocked) ---
-
+// --- Borrower Functions ---
 export async function getBorrowers(): Promise<Borrower[]> {
-  await new Promise(resolve => setTimeout(resolve, 400));
-  return [...MOCK_BORROWERS];
-}
-
-export async function getBorrowerById(id: string): Promise<Borrower | undefined> {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return MOCK_BORROWERS.find(b => b.borrower_id === id);
+  return handleResponse(await fetch(`${API_BASE}/borrowers`));
 }
 
 export async function createBorrower(data: Partial<Borrower>): Promise<Borrower> {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    return {
-        ...data,
-        borrower_id: `b${Date.now()}`,
-        created_at: new Date().toISOString(),
-    } as Borrower;
+  return handleResponse(await fetch(`${API_BASE}/borrowers`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }));
 }
 
-
-// --- Loan Functions (Mocked) ---
-
+// --- Loan Functions ---
 export async function getLoans(): Promise<Loan[]> {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...MOCK_LOANS];
-}
-
-export async function getLoanById(id: string): Promise<Loan | undefined> {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return MOCK_LOANS.find(l => l.loan_id === id);
+  return handleResponse(await fetch(`${API_BASE}/loans`));
 }
 
 export async function createLoan(data: Partial<Loan>): Promise<Loan> {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return {
-        ...data,
-        loan_id: `L-${Math.floor(Math.random() * 9000) + 1000}`,
-        created_at: new Date().toISOString(),
-    } as Loan;
+  return handleResponse(await fetch(`${API_BASE}/loans`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }));
 }
 
 export async function getLoanTypes(): Promise<LoanType[]> {
-    return MOCK_LOAN_TYPES;
+  return handleResponse(await fetch(`${API_BASE}/loan-types`));
 }
 
 export async function getLoanPlans(): Promise<LoanPlan[]> {
-    return MOCK_LOAN_PLANS;
+  return handleResponse(await fetch(`${API_BASE}/loan-plans`));
 }
 
-
-// --- Payment Functions (Mocked) ---
-
+// --- Payment Functions ---
 export async function getPayments(): Promise<Payment[]> {
-  await new Promise(resolve => setTimeout(resolve, 400));
-  return [...MOCK_PAYMENTS];
+  return handleResponse(await fetch(`${API_BASE}/payments`));
 }
 
-export async function createPayment(data: Partial<Payment>): Promise<Payment> {
-    await new Promise(resolve => setTimeout(resolve, 700));
-    return {
-        ...data,
-        payment_id: `p${Date.now()}`,
-        created_at: new Date().toISOString(),
-    } as Payment;
+export async function createPayment(data: Partial<Payment>): Promise<any> {
+  return handleResponse(await fetch(`${API_BASE}/payments`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }));
 }
 
-
-// --- User & Profile Functions (Mocked) ---
-
+// --- User Management ---
 export async function getUsers(): Promise<User[]> {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...MOCK_USERS];
+  return handleResponse(await fetch(`${API_BASE}/users`));
 }
 
 export async function createUser(data: Partial<User>): Promise<User> {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    return {
-        ...data,
-        id: Date.now(),
-    } as User;
+  return handleResponse(await fetch(`${API_BASE}/users`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }));
 }
 
-export async function updateUser(id: number | string, data: Partial<User>): Promise<{message: string, user: User}> {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    const user = MOCK_USERS.find(u => String(u.id) === String(id)) || MOCK_USERS[0];
-    return {
-        message: 'User updated successfully',
-        user: { ...user, ...data }
-    };
+export async function updateUser(id: number | string, data: Partial<User>): Promise<any> {
+  return handleResponse(await fetch(`${API_BASE}/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }));
 }
 
 export async function deleteUser(id: number | string): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 500));
+  await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
 }

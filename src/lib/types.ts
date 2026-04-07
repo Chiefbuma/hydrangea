@@ -12,7 +12,7 @@ export type User = {
 };
 
 export type Borrower = {
-  borrower_id: string;
+  borrower_id: number | string;
   name: string;
   contact_no: string;
   national_id: string;
@@ -22,23 +22,23 @@ export type Borrower = {
 };
 
 export type LoanType = {
-  ltype_id: string;
+  ltype_id: number | string;
   ltype_name: string;
-  ltype_desc: string;
+  ltype_desc?: string;
 };
 
 export type LoanPlan = {
-  lplan_id: string;
+  lplan_id: number | string;
   lplan_interest: number;
   lplan_penalty: number;
 };
 
 export type Loan = {
-  loan_id: string;
-  borrower_id: string;
-  borrower_name: string;
-  ltype_id: string;
-  lplan_id: string;
+  loan_id: number | string;
+  borrower_id: number | string;
+  borrower_name?: string;
+  ltype_id: number | string;
+  lplan_id: number | string;
   amount: number;
   total_loan: number;
   daily_amount: number;
@@ -52,18 +52,10 @@ export type Loan = {
 };
 
 export type Payment = {
-  payment_id: string;
-  loan_id: string;
-  borrower_id: string;
+  payment_id: number | string;
+  loan_id: number | string;
+  borrower_id: number | string;
   payment_amount: number;
   payment_date: string;
   created_at: string;
-};
-
-export type DashboardStats = {
-  totalDisbursed: number;
-  activePortfolio: number;
-  totalRepaid: number;
-  overdueCount: number;
-  overdueAmount: number;
 };
