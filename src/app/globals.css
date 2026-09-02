@@ -78,35 +78,13 @@
     --sidebar-ring: 45 96% 60%;
   }
 
-  .dark [role="dialog"] {
-    --input: hsl(var(--primary) / 0.4);
-  }
-
-  .dark [role="dialog"] label,
-  .dark [role="dialog"] h2,
-  .dark [role="dialog"] input,
-  .dark [role="dialog"] textarea,
-  .dark [role="dialog"] [role="combobox"] {
-    color: hsl(var(--primary));
-  }
-
-  .dark [role="dialog"] input::placeholder,
-  .dark [role="dialog"] textarea::placeholder {
-      color: hsl(var(--primary) / 0.6);
-  }
-
-  .dark [role="dialog"] button.border-input:hover {
-      background-color: hsl(var(--primary) / 0.1);
-      color: hsl(var(--primary));
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "tnum" 1, "cv11" 1, "ss01" 1;
   }
 }
 
@@ -128,75 +106,4 @@
     padding: 0;
     margin: 0;
   }
-}
-
-/* Compact React Calendar Styles */
-.react-calendar {
-  width: 100%;
-  max-width: 280px;
-  font-size: 0.75rem;
-  font-family: inherit;
-  padding: 0;
-}
-
-.react-calendar__wrapper {
-  padding: 0;
-}
-
-.react-calendar__navigation {
-  margin-bottom: 0.5rem;
-}
-
-.react-calendar__navigation button {
-  min-width: 28px;
-  font-size: 0.65rem;
-  padding: 4px;
-  margin: 0 2px;
-}
-
-.react-calendar__month-view__weekdays {
-  margin-bottom: 2px;
-}
-
-.react-calendar__month-view__weekdays__weekday {
-  padding: 2px 0;
-  font-size: 0.65rem;
-  font-weight: 600;
-}
-
-.react-calendar__month-view__days {
-  padding: 0;
-}
-
-.react-calendar__tile {
-  max-width: initial;
-  flex: 1 1 calc(100% / 7);
-  padding: 4px 0;
-  font-size: 0.65rem;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 1px;
-  border-radius: 4px;
-  background: transparent;
-}
-
-.react-calendar__tile:enabled:hover,
-.react-calendar__tile:enabled:focus {
-  background-color: hsl(var(--primary) / 0.1);
-}
-
-.react-calendar__tile--active {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-}
-
-.react-calendar__tile--now {
-  background-color: hsl(var(--accent) / 0.3);
-}
-
-.react-calendar__tile--disabled {
-  opacity: 0.4;
-  color: hsl(var(--muted-foreground));
 }
